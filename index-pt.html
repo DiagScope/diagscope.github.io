@@ -3,577 +3,185 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DiagScope — Encontre pontos cegos de diagnóstico antes da produção</title>
-<meta name="description" content="DiagScope é uma ferramenta de análise estática para Java e Spring Boot que verifica se o seu código deixa evidência suficiente para diagnosticar uma falha — antes que um incidente te obrigue a descobrir isso.">
+<title>DiagScope — Análise estática para Java e Kotlin</title>
+<meta name="description" content="DiagScope encontra código que destrói silenciosamente evidências de diagnóstico — exceções engolidas, transações ausentes, chamadas HTTP sem timeout e muito mais. Roda localmente, nenhum dado sai da sua máquina.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ink: #0a1220;
-    --ink-2: #111c30;
-    --ink-3: #182742;
-    --line: #263351;
-    --paper: #e9edf3;
-    --mute: #8492ac;
-    --signal: #f2b84b;
-    --evidence: #59d6c4;
-    --danger: #e2725b;
-    --radius: 10px;
-  }
-
-  * { box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    margin: 0;
-    background: var(--ink);
-    color: var(--paper);
-    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  h1, h2, h3 {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-
-  code, .mono {
-    font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
-  }
-
-  a { color: inherit; }
-
-  .wrap {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
-
-  /* ---------- NAV ---------- */
-
-  nav.topbar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: rgba(10, 18, 32, 0.86);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
-  }
-
-  nav.topbar .wrap {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Fraunces', serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-decoration: none;
-    color: var(--paper);
-  }
-
-  .brand-mark {
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
-    background: linear-gradient(135deg, var(--evidence), var(--signal));
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 28px;
-    font-size: 0.92rem;
-    color: var(--mute);
-  }
-
-  .nav-links a { text-decoration: none; transition: color .15s; }
-  .nav-links a:hover { color: var(--paper); }
-
-  .nav-links { display: none; }
-  @media (min-width: 720px) { .nav-links { display: flex; } }
-
-  .nav-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 7px;
-    border: 1px solid var(--line);
-    font-size: 0.88rem;
-    text-decoration: none;
-    color: var(--paper);
-    transition: border-color .15s, background .15s;
-  }
-  .nav-cta:hover { border-color: var(--evidence); background: var(--ink-2); }
-
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .lang-switch {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--mute);
-  }
-  .lang-switch a {
-    text-decoration: none;
-    color: var(--mute);
-    padding: 5px 8px;
-    border-radius: 5px;
-    transition: color .15s, background .15s;
-  }
-  .lang-switch a:hover { color: var(--paper); }
-  .lang-switch a.active { color: var(--evidence); background: rgba(89, 214, 196, 0.08); }
-  .lang-switch .sep { color: var(--line); }
-
-  /* ---------- HERO ---------- */
-
-  header.hero {
-    position: relative;
-    padding: 88px 0 72px;
-    overflow: hidden;
-  }
-
-  header.hero::before {
-    content: "";
-    position: absolute;
-    top: -220px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 900px;
-    height: 500px;
-    background: radial-gradient(ellipse at center, rgba(89, 214, 196, 0.10), transparent 70%);
-    pointer-events: none;
-  }
-
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--evidence);
-    border: 1px solid rgba(89, 214, 196, 0.35);
-    background: rgba(89, 214, 196, 0.06);
-    padding: 6px 12px;
-    border-radius: 20px;
-    margin-bottom: 26px;
-  }
-
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 48px;
-    align-items: start;
-    position: relative;
-  }
-
-  @media (min-width: 900px) {
-    .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 56px; }
-  }
-
-  h1.headline {
-    font-size: clamp(2.1rem, 5vw, 3.35rem);
-    line-height: 1.08;
-    color: var(--paper);
-  }
-
-  h1.headline em {
-    font-style: italic;
-    color: var(--signal);
-  }
-
-  .sub {
-    margin-top: 22px;
-    font-size: 1.08rem;
-    color: var(--mute);
-    max-width: 46ch;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 34px;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 13px 22px;
-    border-radius: 8px;
-    font-size: 0.94rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: transform .15s, box-shadow .15s, background .15s;
-  }
-
-  .btn-primary {
-    background: var(--evidence);
-    color: #072320;
-  }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(89, 214, 196, 0.25); }
-
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--line);
-    color: var(--paper);
-  }
-  .btn-ghost:hover { border-color: var(--mute); background: var(--ink-2); }
-
-  .hero-note {
-    margin-top: 16px;
-    font-size: 0.82rem;
-    color: var(--mute);
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-  /* ---------- CODE SCAN SIGNATURE ---------- */
-
-  .scan-frame {
-    background: var(--ink-2);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
-  }
-
-  .scan-titlebar {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--line);
-    background: var(--ink-3);
-  }
-
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: #3a4a6b; }
-
-  .scan-filename {
-    margin-left: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.76rem;
-    color: var(--mute);
-  }
-
-  .scan-body {
-    position: relative;
-    padding: 20px 18px 22px;
-    overflow-x: auto;
-  }
-
-  .code-line {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.83rem;
-    white-space: pre;
-    color: #b7c2d6;
-    padding: 2px 0;
-    position: relative;
-  }
-
-  .code-line .kw { color: #7fa8ff; }
-  .code-line .type { color: #f2b84b; }
-  .code-line .str { color: #59d6c4; }
-  .code-line .num { color: #d99b6c; }
-
-  .flagged-line {
-    background: rgba(226, 114, 91, 0.10);
-    margin: 0 -18px;
-    padding: 2px 18px;
-    border-left: 2px solid var(--danger);
-    animation: revealFlag 0.6s ease-out 2.1s both;
-  }
-
-  .flag-tag {
-    display: inline-block;
-    margin-left: 14px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--danger);
-    opacity: 0;
-    animation: fadeTag 0.5s ease-out 2.3s both;
-  }
-
-  @keyframes revealFlag {
-    from { background: rgba(226, 114, 91, 0); border-left-color: transparent; }
-    to   { background: rgba(226, 114, 91, 0.10); border-left-color: var(--danger); }
-  }
-  @keyframes fadeTag {
-    from { opacity: 0; transform: translateX(-4px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  .scan-beam {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 46px;
-    top: 0;
-    background: linear-gradient(180deg, transparent, rgba(89, 214, 196, 0.16), transparent);
-    animation: sweep 6s cubic-bezier(.4,0,.2,1) infinite;
-    pointer-events: none;
-  }
-
-  @keyframes sweep {
-    0%   { transform: translateY(-10%); opacity: 0; }
-    8%   { opacity: 1; }
-    46%  { transform: translateY(280px); opacity: 1; }
-    56%  { opacity: 0; }
-    100% { transform: translateY(280px); opacity: 0; }
-  }
-
-  .scan-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 16px;
-    border-top: 1px solid var(--line);
-    background: var(--ink-3);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.74rem;
-    color: var(--mute);
-  }
-
-  .confidence-pill {
-    padding: 3px 9px;
-    border-radius: 20px;
-    background: rgba(89, 214, 196, 0.1);
-    color: var(--evidence);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .scan-beam { animation: none; display: none; }
-    .flagged-line, .flag-tag { animation: none; opacity: 1; background: rgba(226,114,91,0.10); border-left-color: var(--danger); }
-  }
-
-  /* ---------- SECTIONS ---------- */
-
-  section { padding: 92px 0; border-top: 1px solid var(--line); }
-
-  .section-head { max-width: 640px; margin-bottom: 48px; }
-  .section-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.15rem); }
-  .section-head p { color: var(--mute); margin-top: 14px; font-size: 1.02rem; }
-
-  /* Problem section */
-
-  .problem-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 40px;
-    align-items: center;
-  }
-  @media (min-width: 900px) { .problem-grid { grid-template-columns: 1fr 1fr; } }
-
-  .problem-list { list-style: none; margin: 28px 0 0; padding: 0; }
-  .problem-list li {
-    display: flex;
-    gap: 14px;
-    padding: 14px 0;
-    border-top: 1px solid var(--line);
-    color: var(--paper);
-    font-size: 0.98rem;
-  }
-  .problem-list li:first-child { border-top: none; }
-  .problem-list .ex-icon { color: var(--danger); flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; }
-
-  .snippet {
-    background: var(--ink-2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 20px 20px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.82rem;
-    color: #b7c2d6;
-    overflow-x: auto;
-    line-height: 1.65;
-  }
-  .snippet .kw { color: #7fa8ff; }
-  .snippet .cm { color: var(--mute); font-style: italic; }
-  .snippet .danger-line { color: var(--danger); }
-
-  /* Pipeline */
-
-  .pipeline-steps {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-    counter-reset: step;
-  }
-  @media (min-width: 800px) { .pipeline-steps { grid-template-columns: repeat(4, 1fr); gap: 22px; } }
-
-  .step {
-    counter-increment: step;
-    padding: 24px 0;
-    border-top: 1px solid var(--line);
-    position: relative;
-  }
-  @media (min-width: 800px) { .step { border-top: none; padding: 0; } }
-
-  .step::before {
-    content: counter(step, decimal-leading-zero);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--signal);
-    display: block;
-    margin-bottom: 10px;
-  }
-
-  .step h3 { font-size: 1.02rem; font-family: 'IBM Plex Sans'; font-weight: 600; color: var(--paper); }
-  .step p { color: var(--mute); font-size: 0.92rem; margin-top: 8px; }
-
-  /* Rules */
-
-  .rules-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-  @media (min-width: 720px) { .rules-grid { grid-template-columns: 1fr 1fr; } }
-
-  .rule-card {
-    background: var(--ink-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 24px;
-    transition: border-color .15s;
-  }
-  .rule-card:hover { border-color: var(--evidence); }
-
-  .rule-id {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.03em;
-    color: var(--signal);
-    text-transform: uppercase;
-  }
-
-  .rule-card h3 { font-size: 1.08rem; margin-top: 8px; color: var(--paper); font-family: 'IBM Plex Sans'; font-weight: 600; }
-  .rule-card p { color: var(--mute); font-size: 0.92rem; margin-top: 10px; }
-
-  .rule-card code {
-    display: inline-block;
-    margin-top: 12px;
-    background: var(--ink-3);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    color: #b7c2d6;
-  }
-
-  .roadmap-note {
-    margin-top: 30px;
-    padding: 18px 20px;
-    border: 1px dashed var(--line);
-    border-radius: 10px;
-    color: var(--mute);
-    font-size: 0.9rem;
-  }
-  .roadmap-note strong { color: var(--paper); }
-
-  /* CTA */
-
-  .cta-box {
-    background: var(--ink-2);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 52px 40px;
-    text-align: center;
-  }
-
-  .cta-box h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
-  .cta-box p { color: var(--mute); margin-top: 12px; max-width: 50ch; margin-left: auto; margin-right: auto; }
-
-  .terminal {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin: 28px auto 0;
-    padding: 13px 20px;
-    background: var(--ink);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.86rem;
-    color: var(--evidence);
-    max-width: 100%;
-    overflow-x: auto;
-  }
-  .terminal .prompt { color: var(--mute); }
-
-  .cta-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    margin-top: 30px;
-  }
-
-  /* Footer */
-
-  footer {
-    border-top: 1px solid var(--line);
-    padding: 44px 0 56px;
-    color: var(--mute);
-    font-size: 0.86rem;
-  }
-
-  .footer-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-  @media (min-width: 720px) {
-    .footer-grid { flex-direction: row; justify-content: space-between; align-items: center; }
-  }
-
-  footer a { text-decoration: none; color: var(--mute); }
-  footer a:hover { color: var(--paper); }
-
-  .footer-links { display: flex; gap: 22px; }
+:root {
+  --bg:#F5F2EB;--surface:#EDEAE2;--surface-2:#E4E1D8;--line:#D3CEBD;
+  --ink:#1C1917;--ink-2:#3D3832;--muted:#7A7264;--subtle:#A09890;
+  --brand:#2D5A4A;--brand-lt:#3E7D68;--brand-bg:rgba(45,90,74,.07);--brand-border:rgba(45,90,74,.25);
+  --signal:#B8440F;--signal-lt:#D45715;--signal-bg:rgba(184,68,15,.07);--signal-border:rgba(184,68,15,.25);
+  --warn:#8A6900;--warn-bg:rgba(138,105,0,.07);--warn-border:rgba(138,105,0,.25);
+  --code-bg:#1E1B16;--code-text:#D4CBBA;--code-kw:#7EB8A0;--code-ty:#D4966A;--code-cm:#6B6357;--code-st:#98B87A;
+  --radius:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1A1714;--surface:#242019;--surface-2:#2D2922;--line:#3A352C;
+  --ink:#EDE8DF;--ink-2:#C8BFB2;--muted:#8A8075;--subtle:#5A554D;
+  --brand:#5BAE8C;--brand-lt:#72C5A5;--brand-bg:rgba(91,174,140,.1);--brand-border:rgba(91,174,140,.3);
+  --signal:#E07040;--signal-lt:#F08558;--signal-bg:rgba(224,112,64,.1);--signal-border:rgba(224,112,64,.3);
+  --warn:#C09A30;--warn-bg:rgba(192,154,48,.1);--warn-border:rgba(192,154,48,.3);
+  --code-bg:#111009;--code-text:#C8BFB2;
+}}
+:root[data-theme="dark"]{
+  --bg:#1A1714;--surface:#242019;--surface-2:#2D2922;--line:#3A352C;
+  --ink:#EDE8DF;--ink-2:#C8BFB2;--muted:#8A8075;--subtle:#5A554D;
+  --brand:#5BAE8C;--brand-lt:#72C5A5;--brand-bg:rgba(91,174,140,.1);--brand-border:rgba(91,174,140,.3);
+  --signal:#E07040;--signal-lt:#F08558;--signal-bg:rgba(224,112,64,.1);--signal-border:rgba(224,112,64,.3);
+  --warn:#C09A30;--warn-bg:rgba(192,154,48,.1);--warn-border:rgba(192,154,48,.3);
+  --code-bg:#111009;--code-text:#C8BFB2;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.01em;text-wrap:balance;}
+code,.mono{font-family:'JetBrains Mono','Fira Code',monospace;}
+a{color:inherit;}
+img{max-width:100%;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+nav.bar{position:sticky;top:0;z-index:50;background:#1C1917;border-bottom:1px solid rgba(255,255,255,.07);}
+nav.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;}
+.brand{display:flex;align-items:center;gap:9px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:#F5F2EB;text-decoration:none;letter-spacing:.01em;}
+.brand-icon{width:24px;height:24px;border-radius:6px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-icon svg{width:13px;height:13px;fill:none;stroke:#F5F2EB;stroke-width:2.2;stroke-linecap:round;}
+.nav-links{display:none;gap:26px;font-size:.88rem;color:rgba(245,242,235,.55);}
+.nav-links a{text-decoration:none;transition:color .15s;}
+.nav-links a:hover{color:#F5F2EB;}
+@media(min-width:720px){.nav-links{display:flex;}}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-brew{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:7px;background:var(--brand);color:#F0EFEA;font-size:.84rem;font-weight:500;text-decoration:none;transition:background .15s;}
+.nav-brew:hover{background:var(--brand-lt);}
+.lang-sw{display:flex;align-items:center;gap:0;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(245,242,235,.4);}
+.lang-sw a{text-decoration:none;color:rgba(245,242,235,.4);padding:4px 7px;border-radius:4px;transition:color .15s;}
+.lang-sw a:hover{color:#F5F2EB;}
+.lang-sw a.on{color:var(--brand);}
+.lang-sep{padding:0 1px;}
+.hero{padding:80px 0 72px;border-bottom:1px solid var(--line);}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:52px;align-items:center;}
+@media(min-width:900px){.hero-grid{grid-template-columns:1.1fr .9fr;gap:64px;}}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);border:1px solid var(--brand-border);background:var(--brand-bg);padding:5px 11px;border-radius:20px;margin-bottom:24px;}
+h1.hed{font-size:clamp(2.2rem,5.5vw,3.5rem);line-height:1.06;color:var(--ink);}
+h1.hed em{font-style:italic;color:var(--signal);}
+.hero-sub{margin-top:20px;font-size:1.05rem;color:var(--muted);max-width:44ch;line-height:1.7;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:8px;font-size:.93rem;font-weight:500;text-decoration:none;transition:transform .15s,box-shadow .15s,background .15s,border-color .15s;}
+.btn-green{background:var(--brand);color:#F0EFEA;}
+.btn-green:hover{background:var(--brand-lt);transform:translateY(-1px);box-shadow:0 8px 24px rgba(45,90,74,.22);}
+.btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);}
+.btn-outline:hover{border-color:var(--muted);background:var(--surface);}
+.hero-cmd{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:.79rem;color:var(--muted);}
+.hero-cmd span{color:var(--brand);}
+.term-frame{background:var(--code-bg);border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.28);}
+.term-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);}
+.tdot{width:9px;height:9px;border-radius:50%;}
+.tdot-r{background:#E05252;}.tdot-y{background:#D4A520;}.tdot-g{background:#4CAF78;}
+.term-title{margin-left:6px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(212,203,186,.35);}
+.term-body{padding:20px 22px 22px;font-family:'JetBrains Mono',monospace;font-size:.81rem;line-height:1.8;}
+.tl{display:block;color:var(--code-text);}
+.tl-cmd{color:#8ABE8A;}.tl-dim{color:rgba(212,203,186,.35);}.tl-brand{color:#7EB8A0;font-weight:500;}
+.tl-err{color:#E07060;}.tl-warn{color:#C09A30;}.tl-info{color:#7898C0;}.tl-final{color:rgba(212,203,186,.7);}
+.tl-gap{display:block;height:.4em;}
+.tl{opacity:0;animation:lineIn .12s ease-out forwards;}
+.tl:nth-child(1){animation-delay:.1s}.tl:nth-child(2){animation-delay:.6s}.tl:nth-child(3){animation-delay:.9s}
+.tl:nth-child(4){animation-delay:1.1s}.tl:nth-child(5){animation-delay:1.3s}.tl:nth-child(6){animation-delay:1.5s}
+.tl:nth-child(7){animation-delay:1.7s}.tl:nth-child(8){animation-delay:1.9s}.tl:nth-child(9){animation-delay:2.1s}
+.tl:nth-child(10){animation-delay:2.3s}.tl:nth-child(11){animation-delay:2.5s}.tl:nth-child(12){animation-delay:2.7s}
+.tl:nth-child(13){animation-delay:2.9s}.tl:nth-child(14){animation-delay:3.1s}.tl:nth-child(15){animation-delay:3.3s}
+.tl:nth-child(16){animation-delay:3.5s}
+@keyframes lineIn{from{opacity:0;transform:translateX(-3px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tl{opacity:1;animation:none;}}
+section{padding:88px 0;border-top:1px solid var(--line);}
+.sh{margin-bottom:52px;max-width:600px;}
+.sh h2{font-size:clamp(1.65rem,3.5vw,2.3rem);color:var(--ink);}
+.sh p{color:var(--muted);margin-top:14px;font-size:1.02rem;line-height:1.7;}
+.prob-grid{display:grid;grid-template-columns:1fr;gap:44px;align-items:start;}
+@media(min-width:900px){.prob-grid{grid-template-columns:1fr 1fr;}}
+.prob-items{display:flex;flex-direction:column;gap:0;}
+.prob-item{display:flex;gap:18px;padding:20px 0;border-top:1px solid var(--line);}
+.prob-item:first-child{border-top:none;padding-top:0;}
+.prob-num{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--signal);flex-shrink:0;padding-top:3px;}
+.prob-item h3{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px;}
+.prob-item p{font-size:.93rem;color:var(--muted);}
+.code-card{background:var(--code-bg);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;}
+.code-card-bar{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);font-family:'JetBrains Mono',monospace;font-size:.71rem;color:rgba(212,203,186,.35);background:rgba(255,255,255,.025);}
+.code-card-body{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--code-text);line-height:1.75;overflow-x:auto;}
+.ck{color:#7EB8A0;}.ct{color:#D4966A;}.cc{color:#6B6357;font-style:italic;}
+.c-hl{display:block;background:rgba(184,68,15,.13);border-left:2px solid #B8440F;margin:0 -20px;padding:0 20px 0 18px;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-hl{background:rgba(224,112,64,.12);border-color:#E07040;}}
+:root[data-theme="dark"] .c-hl{background:rgba(224,112,64,.12);border-color:#E07040;}
+.how-steps{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+@media(min-width:720px){.how-steps{grid-template-columns:repeat(3,1fr);}}
+.how-step{background:var(--bg);padding:32px 28px;}
+.how-num{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--brand);letter-spacing:.04em;margin-bottom:14px;display:block;}
+.how-step h3{font-family:'DM Sans',sans-serif;font-size:1.02rem;font-weight:600;margin-bottom:8px;}
+.how-step p{font-size:.92rem;color:var(--muted);}
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+@media(min-width:720px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1024px){.cat-grid{grid-template-columns:repeat(4,1fr);}}
+.cat-cell{background:var(--bg);padding:22px 20px;transition:background .15s;}
+.cat-cell:hover{background:var(--surface);}
+.cat-name{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.cat-rules{font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--muted);line-height:1.7;}
+.cat-count{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--brand);border:1px solid var(--brand-border);background:var(--brand-bg);padding:2px 7px;border-radius:20px;display:inline-block;margin-bottom:10px;}
+.rules-note{margin-top:20px;padding:16px 20px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;color:var(--muted);}
+.rules-note strong{color:var(--ink);}
+.rules-note code{font-size:.82rem;background:var(--surface-2);padding:1px 6px;border-radius:4px;color:var(--ink-2);}
+.install-grid{display:grid;grid-template-columns:1fr;gap:44px;}
+@media(min-width:900px){.install-grid{grid-template-columns:1fr 1fr;}}
+.step-list{display:flex;flex-direction:column;gap:28px;}
+.install-step{display:flex;gap:18px;}
+.step-num{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);margin-top:2px;}
+.install-step h3{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;margin-bottom:6px;}
+.install-step p{font-size:.92rem;color:var(--muted);}
+.cmd-block{margin-top:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px 15px;font-family:'JetBrains Mono',monospace;font-size:.83rem;color:var(--ink-2);overflow-x:auto;white-space:nowrap;}
+.cmd-block .pr{color:var(--muted);}.cmd-block .cmd-green{color:var(--brand);}
+.usage-list{display:flex;flex-direction:column;gap:20px;}
+.usage-item h4{font-family:'DM Sans',sans-serif;font-size:.93rem;font-weight:600;margin-bottom:6px;}
+.usage-item p{font-size:.88rem;color:var(--muted);margin-bottom:8px;}
+.privacy-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:720px){.privacy-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1024px){.privacy-grid{grid-template-columns:repeat(3,1fr);}}
+.privacy-item{display:flex;gap:14px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+.privacy-icon{width:32px;height:32px;border-radius:8px;background:var(--brand-bg);border:1px solid var(--brand-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.privacy-icon svg{width:15px;height:15px;stroke:var(--brand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.privacy-item h3{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:5px;}
+.privacy-item p{font-size:.88rem;color:var(--muted);line-height:1.6;}
+.cta-wrap{background:#1C1917;border-radius:16px;padding:60px 40px;text-align:center;}
+.cta-wrap h2{font-size:clamp(1.7rem,3.5vw,2.4rem);color:#F5F2EB;}
+.cta-wrap p{color:rgba(245,242,235,.55);margin-top:12px;font-size:1.02rem;max-width:44ch;margin-left:auto;margin-right:auto;}
+.brew-cmd{display:inline-flex;align-items:center;gap:12px;margin-top:32px;padding:14px 22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:.88rem;color:#F5F2EB;max-width:100%;overflow-x:auto;}
+.brew-cmd .br-pr{color:rgba(245,242,235,.4);}.brew-cmd .br-cmd{color:#7EB8A0;}
+.cta-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:28px;}
+.btn-white{background:#F5F2EB;color:#1C1917;}.btn-white:hover{background:#fff;transform:translateY(-1px);}
+.btn-ghost-light{background:transparent;border:1px solid rgba(255,255,255,.2);color:#F5F2EB;}.btn-ghost-light:hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.06);}
+footer{border-top:1px solid var(--line);padding:40px 0 52px;}
+.foot-row{display:flex;flex-direction:column;gap:16px;}
+@media(min-width:720px){.foot-row{flex-direction:row;justify-content:space-between;align-items:center;}}
+.foot-brand{font-size:.9rem;color:var(--muted);}.foot-brand strong{color:var(--ink);}
+.foot-links{display:flex;gap:22px;font-size:.88rem;color:var(--muted);}
+.foot-links a{text-decoration:none;color:var(--muted);transition:color .15s;}.foot-links a:hover{color:var(--ink);}
 </style>
 </head>
 <body>
-
-<nav class="topbar">
+<nav class="bar">
   <div class="wrap">
     <a href="#" class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-icon"><svg viewBox="0 0 14 14"><path d="M2 7h10M7 2v10M4 4l6 6M10 4l-6 6"/></svg></span>
       DiagScope
     </a>
     <div class="nav-links">
-      <a href="#problem">Problema</a>
+      <a href="#problem">Por que existe</a>
       <a href="#how">Como funciona</a>
-      <a href="#rules">O que verifica</a>
-      <a href="#get-it">Baixar</a>
+      <a href="#rules">44 regras</a>
+      <a href="#install">Instalar</a>
     </div>
     <div class="nav-right">
-      <a href="https://github.com/DiagScope/diagscope" class="nav-cta">GitHub →</a>
-      <div class="lang-switch">
-        <a href="index.html">EN</a><span class="sep">·</span><a href="index-es.html">ES</a><span class="sep">·</span><a href="index-pt.html" class="active">PT</a>
+      <a href="#install" class="nav-brew">Instalar via Homebrew</a>
+      <div class="lang-sw">
+        <a href="index.html">EN</a><span class="lang-sep">·</span><a href="index-es.html">ES</a><span class="lang-sep">·</span><a href="index-pt.html" class="on">PT</a>
       </div>
     </div>
   </div>
@@ -582,87 +190,107 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow">Análise estática · Java e Spring Boot</span>
-      <h1 class="headline">Encontre <em>pontos cegos</em> de diagnóstico antes da produção.</h1>
-      <p class="sub">O DiagScope lê seu código antes dele ir pra produção — verificando se uma falha deixaria evidência suficiente pra se explicar, ou desapareceria sem deixar rastro.</p>
+      <span class="hero-tag">Análise estática · Java &amp; Kotlin</span>
+      <h1 class="hed">Este código vai se explicar<br>quando <em>quebrar</em> em produção?</h1>
+      <p class="hero-sub">DiagScope segue fluxos de execução reais e encontra código que destrói silenciosamente as evidências de diagnóstico — antes que um incidente force você a descobrir que elas nunca estiveram lá.</p>
       <div class="hero-actions">
-        <a href="#get-it" class="btn btn-primary">Baixar a CLI</a>
-        <a href="https://github.com/DiagScope/diagscope" class="btn btn-ghost">Ver no GitHub</a>
+        <a href="#install" class="btn btn-green">Instalar via Homebrew</a>
+        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-outline">Ver relatório de exemplo</a>
       </div>
-      <p class="hero-note">diagscope scan --project .</p>
+      <p class="hero-cmd"><span>$</span> diagscope scan --project .</p>
     </div>
-
-    <div class="scan-frame">
-      <div class="scan-titlebar">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        <span class="scan-filename">PaymentService.java</span>
+    <div class="term-frame" aria-label="Exemplo de saída no terminal">
+      <div class="term-bar">
+        <span class="tdot tdot-r"></span><span class="tdot tdot-y"></span><span class="tdot tdot-g"></span>
+        <span class="term-title">terminal</span>
       </div>
-      <div class="scan-body">
-        <div class="scan-beam" aria-hidden="true"></div>
-        <div class="code-line"><span class="kw">public</span> <span class="type">CaptureResult</span> capture(<span class="type">UUID</span> paymentId) {</div>
-        <div class="code-line">&nbsp;&nbsp;<span class="kw">try</span> {</div>
-        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> provider.capture(paymentId);</div>
-        <div class="code-line">&nbsp;&nbsp;} <span class="kw">catch</span> (PaymentException exception) {</div>
-        <div class="code-line flagged-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> CaptureResult.failed();<span class="flag-tag">⚠ sem evidência preservada</span></div>
-        <div class="code-line">&nbsp;&nbsp;}</div>
-        <div class="code-line">}</div>
-      </div>
-      <div class="scan-footer">
-        <span>1 achado · SILENT_FAILURE_CONVERSION</span>
-        <span class="confidence-pill">confiança: alta</span>
+      <div class="term-body">
+        <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
+        <span class="tl tl-gap"></span>
+        <span class="tl tl-brand">  DiagScope 0.1.0-alpha.1 · payment-service</span>
+        <span class="tl tl-dim">  8 arquivos · 47 métodos · 6 fluxos · 312 ms</span>
+        <span class="tl tl-gap"></span>
+        <span class="tl tl-err">  ✗ SILENT_CATCH              PaymentService.java:47</span>
+        <span class="tl tl-err">  ✗ FUTURE_GET_NO_TIMEOUT     ReportService.java:83</span>
+        <span class="tl tl-warn">  ⚠ MISSING_TX_ANNOTATION     OrderService.java:31</span>
+        <span class="tl tl-warn">  ⚠ HTTP_TIMEOUT_NOT_SET      NotificationService.java:22</span>
+        <span class="tl tl-warn">  ⚠ N_PLUS_ONE_QUERY_RISK     OrderService.java:61</span>
+        <span class="tl tl-info">  ℹ GOD_CLASS_DETECTED        PaymentOrchestrator.java</span>
+        <span class="tl tl-gap"></span>
+        <span class="tl tl-final">  6 problemas · report.html pronto</span>
       </div>
     </div>
   </div>
 </header>
 
 <section id="problem">
-  <div class="wrap problem-grid">
+  <div class="wrap prob-grid">
     <div>
-      <div class="section-head" style="margin-bottom:0;">
+      <div class="sh" style="margin-bottom:0;">
         <h2>Algumas falhas não falham alto o suficiente.</h2>
-        <p>Datadog, Grafana e New Relic só conseguem mostrar os sinais que o seu código realmente produziu. Se o log, a métrica ou o contexto nunca foram escritos, nenhum dashboard vai inventá-los na hora do incidente.</p>
+        <p>Datadog, Grafana, New Relic — eles só conseguem exibir os sinais que o seu código realmente produziu. Se a exceção foi engolida, a transação não foi desfeita ou a chamada HTTP não tinha timeout, nenhum dashboard vai conjurar essa evidência durante um incidente.</p>
       </div>
-      <ul class="problem-list">
-        <li><span class="ex-icon">01</span> Uma exceção é capturada e descartada em silêncio — sem log, sem métrica, sem relançamento.</li>
-        <li><span class="ex-icon">02</span> Uma falha vira um resultado que parece normal, e a causa original desaparece junto.</li>
-        <li><span class="ex-icon">03</span> Uma mensagem Kafka é enviada, mas ninguém verifica se o broker confirmou o recebimento.</li>
-        <li><span class="ex-icon">04</span> Um ID de pagamento vira tag de métrica — e sua conta de observabilidade infla junto.</li>
-      </ul>
+      <div class="prob-items" style="margin-top:32px;">
+        <div class="prob-item">
+          <span class="prob-num">01</span>
+          <div><h3>Uma exceção desaparece</h3><p>Capturada e nunca logada, propagada ou tratada. O que quer que tenha acontecido, ninguém vai saber.</p></div>
+        </div>
+        <div class="prob-item">
+          <span class="prob-num">02</span>
+          <div><h3>Uma falha parece sucesso</h3><p>A exceção vira <code>false</code>, <code>null</code> ou um Optional vazio — e a causa original vai junto.</p></div>
+        </div>
+        <div class="prob-item">
+          <span class="prob-num">03</span>
+          <div><h3>Uma operação de escrita sem transação</h3><p>Se o segundo save falhar, o primeiro já foi commitado e não há rollback. Os dados ficam inconsistentes, silenciosamente.</p></div>
+        </div>
+        <div class="prob-item">
+          <span class="prob-num">04</span>
+          <div><h3>Uma chamada HTTP sem timeout</h3><p>Um upstream lento segura a thread indefinidamente. Sob carga, o pool se esgota e o serviço inteiro para de responder.</p></div>
+        </div>
+      </div>
     </div>
-    <div class="snippet">
-<span class="cm">// o que a produção vê hoje</span><br>
-<span class="kw">catch</span> (PaymentException exception) {<br>
-&nbsp;&nbsp;<span class="danger-line">return false;</span><br>
+    <div class="code-card">
+      <div class="code-card-bar">OrderService.java</div>
+      <div class="code-card-body">
+<span class="ck">public</span> <span class="ct">Order</span> createOrder(<span class="ct">OrderRequest</span> req) {<br>
+&nbsp;&nbsp;<span class="c-hl"><span class="cc">// sem @Transactional — se reserve() lançar,</span></span>
+&nbsp;&nbsp;<span class="c-hl"><span class="cc">// o order salvo nunca é desfeito</span></span>
+&nbsp;&nbsp;<span class="ct">Order</span> order = orderRepo.save(<span class="ck">new</span> <span class="ct">Order</span>(req));<br>
+&nbsp;&nbsp;inventory.reserve(req.items());<br>
+&nbsp;&nbsp;<span class="ck">return</span> order;<br>
 }<br>
 <br>
-<span class="cm">// o incidente, três meses depois</span><br>
-<span class="cm">// "por que esse pagamento falhou? a gente não sabe."</span>
+<span class="ct">String</span> callNotification(<span class="ct">String</span> uri) {<br>
+&nbsp;&nbsp;<span class="ct">Mono</span>&lt;<span class="ct">String</span>&gt; response = webClient.get(uri);<br>
+&nbsp;&nbsp;<span class="c-hl"><span class="cc">// sem .timeout() — trava indefinidamente</span></span>
+&nbsp;&nbsp;<span class="ck">return</span> response.block();<br>
+}
+      </div>
     </div>
   </div>
 </section>
 
 <section id="how">
   <div class="wrap">
-    <div class="section-head">
+    <div class="sh">
       <h2>Como funciona</h2>
-      <p>O DiagScope roda antes de Datadog, Grafana ou New Relic verem qualquer sinal — direto no seu código-fonte, no seu editor ou no seu CI.</p>
+      <p>DiagScope lê os arquivos fonte e raciocina sobre a estrutura. Não compila o projeto, não executa o código e não envia nada para fora da sua máquina.</p>
     </div>
-    <div class="pipeline-steps">
-      <div class="step">
-        <h3>Aponte pra um projeto</h3>
-        <p>Um repositório Maven por execução. Sem servidor, sem credencial, nenhum código sai da sua máquina.</p>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="how-num">Parse</span>
+        <h3>Lê todos os arquivos fonte</h3>
+        <p>Todos os arquivos <code>.java</code> e <code>.kt</code> são analisados em um modelo neutro de linguagem. Chamadas de método, anotações, blocos catch, loops — tudo que as regras precisam raciocinar.</p>
       </div>
-      <div class="step">
-        <h3>Ele encontra seus pontos de entrada</h3>
-        <p>Endpoints REST, listeners Kafka, jobs agendados — os lugares onde um fluxo de verdade começa.</p>
+      <div class="how-step">
+        <span class="how-num">Construir fluxos</span>
+        <h3>Segue caminhos de execução reais</h3>
+        <p>Para cada entrypoint — endpoint REST, listener Kafka, método <code>@Scheduled</code> ou qualquer método público — ele segue o grafo de chamadas e coleta todos os métodos alcançáveis em um <em>fluxo</em>.</p>
       </div>
-      <div class="step">
-        <h3>Ele segue o fluxo</h3>
-        <p>Chamadas locais, poucos níveis de profundidade. Quando não tem certeza, ele diz — nunca disfarça um chute de fato.</p>
-      </div>
-      <div class="step">
-        <h3>Você recebe um relatório</h3>
-        <p>O que está faltando, onde, e o quanto o DiagScope confia nisso — arquivo, linha, e uma sugestão concreta.</p>
+      <div class="how-step">
+        <span class="how-num">Executar regras</span>
+        <h3>Todo problema tem contexto</h3>
+        <p>Cada regra vê todos os métodos em todos os fluxos. Os problemas identificam o entrypoint que leva ao problema, para que você saiba o contexto operacional. Caminhos ambíguos são reportados como limites de fluxo, nunca como suposições.</p>
       </div>
     </div>
   </div>
@@ -670,66 +298,162 @@
 
 <section id="rules">
   <div class="wrap">
-    <div class="section-head">
-      <h2>O que ele verifica hoje</h2>
-      <p>A Fase 1 é propositalmente pequena — quatro verificações escolhidas porque quase nunca são questão de estilo, e quase sempre valem a pena corrigir.</p>
+    <div class="sh">
+      <h2>44 regras em 12 categorias</h2>
+      <p>Cada regra tem uma afirmação precisa, uma impressão digital determinística e um nível de confiança. Execute <code>diagscope explain &lt;RULE_ID&gt;</code> para entender o que um problema significa e como corrigi-lo.</p>
     </div>
-    <div class="rules-grid">
-      <div class="rule-card">
-        <span class="rule-id">Catch silencioso</span>
-        <h3>Uma exceção desaparece</h3>
-        <p>Capturada e nunca logada, propagada, ou tratada de algum jeito. Aconteça o que acontecer, ninguém vai saber.</p>
-        <code>catch (Exception e) { }</code>
-      </div>
-      <div class="rule-card">
-        <span class="rule-id">Falha convertida silenciosamente</span>
-        <h3>Uma falha parece um sucesso</h3>
-        <p>A exceção vira <code>false</code>, <code>null</code>, ou <code>Optional.empty()</code> — e a causa original desaparece junto.</p>
-        <code>catch (Exception e) { return null; }</code>
-      </div>
-      <div class="rule-card">
-        <span class="rule-id">Envio ao Kafka ignorado</span>
-        <h3>Publica, e torce</h3>
-        <p>O método retorna antes do broker confirmar, sem nenhum callback observando falha de entrega.</p>
-        <code>kafkaTemplate.send(topic, event);</code>
-      </div>
-      <div class="rule-card">
-        <span class="rule-id">Tag de métrica de alta cardinalidade</span>
-        <h3>Um ID único vira tag de métrica</h3>
-        <p>paymentId, um UUID, um request ID — usar isso como tag de métrica explode a cardinalidade lá na frente.</p>
-        <code>.tag("paymentId", id.toString())</code>
-      </div>
+    <div class="cat-grid">
+      <div class="cat-cell"><span class="cat-count">5 regras</span><div class="cat-name">Tratamento de exceções</div><div class="cat-rules">SILENT_CATCH<br>SILENT_FAILURE_CONVERSION<br>LOG_WITHOUT_THROWABLE<br>GENERIC_EXCEPTION_MESSAGE<br>DUPLICATE_DIAGNOSTIC_SIGNAL</div></div>
+      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Transações</div><div class="cat-rules">TX_ROLLBACK_SUPPRESSED<br>TX_PROPAGATION_MISMATCH<br>MISSING_TX_ANNOTATION</div></div>
+      <div class="cat-cell"><span class="cat-count">4 regras</span><div class="cat-name">Banco de dados</div><div class="cat-rules">JDBC_RESOURCE_NOT_CLOSED<br>DB_RESOURCE_CLOSE_NOT_GUARDED<br>JPA_ENTITY_MANAGER_NOT_CLOSED<br>JDBC_TEMPLATE_CONN_ESCAPE</div></div>
+      <div class="cat-cell"><span class="cat-count">6 regras</span><div class="cat-name">Resiliência</div><div class="cat-rules">ASYNC_RESULT_UNOBSERVED<br>HTTP_CLIENT_ERROR_DISCARDED<br>SCHEDULED_TASK_SWALLOWS<br>RETRY_WITHOUT_DIAGNOSTICS<br>FALLBACK_HIDES_FAILURE<br>HTTP_TIMEOUT_NOT_SET</div></div>
+      <div class="cat-cell"><span class="cat-count">5 regras</span><div class="cat-name">Concorrência</div><div class="cat-rules">LOCK_NOT_RELEASED<br>THREAD_LOCAL_LEAK<br>FUTURE_GET_NO_TIMEOUT<br>BLOCKING_IN_REACTIVE<br>CHECK_THEN_ACT_ON_MAP</div></div>
+      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Kafka</div><div class="cat-rules">KAFKA_SEND_RESULT_IGNORED<br>KAFKA_ACK_NOT_INVOKED<br>KAFKA_LISTENER_NOT_PROPAGATED</div></div>
+      <div class="cat-cell"><span class="cat-count">7 regras</span><div class="cat-name">Observabilidade</div><div class="cat-rules">HIGH_CARDINALITY_TAG<br>DYNAMIC_METRIC_NAME<br>METRIC_CREATED_IN_LOOP<br>SENSITIVE_PAYLOAD_LOGGED<br>MDC_CONTEXT_LOST<br>PRINT_STACK_TRACE<br>SYSTEM_OUTPUT</div></div>
+      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">AOP / Proxy</div><div class="cat-rules">AOP_SELF_INVOCATION<br>AOP_ADVICE_NOT_APPLIED<br>AOP_UNMANAGED_ADVICE</div></div>
+      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Reativo</div><div class="cat-rules">MUTINY_FAILURE_RECOVERED<br>REACTIVE_MSG_NOT_PROPAGATED<br>MUTINY_SUBSCRIPTION_UNOBSERVED</div></div>
+      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Manutenibilidade</div><div class="cat-rules">EXCESSIVE_METHOD_PARAMS<br>HIGH_METHOD_COMPLEXITY<br>GOD_CLASS_DETECTED</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regra</span><div class="cat-name">Performance</div><div class="cat-rules">N_PLUS_ONE_QUERY_RISK</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regra</span><div class="cat-name">Null safety</div><div class="cat-rules">OPTIONAL_GET_WITHOUT_CHECK</div></div>
     </div>
-    <div class="roadmap-note">
-      <strong>Isso ainda é fase inicial.</strong> A Fase 1 existe pra testar uma coisa só: se esses achados se sustentam em código real, com poucos falsos positivos. Instrumentação por aspectos, comparação com dashboard do Grafana, e fluxos entre serviços estão planejados — mas só se essa primeira aposta, menor, se provar primeiro.
+    <p class="rules-note"><strong>diagscope rules</strong> lista todas as regras com severidade e versão. <strong>diagscope explain &lt;ID&gt;</strong> mostra o que a regra detecta, por que importa e como corrigir. Suprima um problema específico com <code>// diagscope:ignore RULE_ID -- motivo</code>.</p>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="sh">
+      <h2>Comece em dois comandos</h2>
+      <p>O DiagScope é distribuído via Homebrew. O Java 25 é instalado automaticamente — não é necessário configurar mais nada.</p>
+    </div>
+    <div class="install-grid">
+      <div class="step-list">
+        <div class="install-step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>Instalar</h3>
+            <p>Adicione o tap e instale. O Java 25 vem junto.</p>
+            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">brew tap DiagScope/tap</span></div>
+            <div class="cmd-block" style="margin-top:6px;"><span class="pr">$</span> <span class="cmd-green">brew install diagscope</span></div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Executar</h3>
+            <p>Aponte para qualquer projeto Java ou Kotlin. Sem necessidade de build.</p>
+            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">diagscope scan --project /caminho/do/projeto</span></div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Ler o relatório</h3>
+            <p>Resultados em <code>target/diagscope/</code> (Maven) ou <code>build/diagscope/</code> (Gradle).</p>
+            <div class="cmd-block" style="white-space:normal;line-height:1.8;">
+              report<span style="color:var(--brand);">.html</span> &nbsp;← interativo<br>
+              report<span style="color:var(--muted);">.md</span> &nbsp;&nbsp;&nbsp;← para revisão de PR<br>
+              result<span style="color:var(--muted);">.json</span> &nbsp;← automação
+            </div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">↑</div>
+          <div>
+            <h3>Atualizar</h3>
+            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">brew update &amp;&amp; brew upgrade diagscope</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="usage-list">
+        <div class="usage-item">
+          <h4>Spring, Quarkus, Micronaut</h4>
+          <p>Endpoints REST, listeners Kafka e jobs <code>@Scheduled</code> são detectados automaticamente como entrypoints.</p>
+          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project .</div>
+        </div>
+        <div class="usage-item">
+          <h4>Java ou Kotlin sem framework</h4>
+          <p>Bibliotecas e projetos simples — todo método público vira entrypoint.</p>
+          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . --entrypoint PUBLIC_METHOD</div>
+        </div>
+        <div class="usage-item">
+          <h4>CI — apenas arquivos alterados</h4>
+          <p>Falhe o build apenas em problemas nos arquivos tocados por este PR.</p>
+          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . \<br>&nbsp;&nbsp;--changed-since origin/main --fail-on ERROR</div>
+        </div>
+        <div class="usage-item">
+          <h4>Baseline — gate apenas novos problemas</h4>
+          <p>Registre o estado atual e bloqueie apenas regressões futuras.</p>
+          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . --update-baseline<br><span class="pr">$</span> diagscope scan --project . --baseline --fail-on ERROR</div>
+        </div>
+        <div class="usage-item">
+          <h4>Explorar as regras</h4>
+          <div class="cmd-block"><span class="pr">$</span> diagscope rules<br><span class="pr">$</span> diagscope explain SILENT_CATCH</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="get-it">
+<section id="privacy">
   <div class="wrap">
-    <div class="cta-box">
-      <h2>Teste no seu próprio código.</h2>
-      <p>Aponte pra um projeto Maven de verdade e veja o que aparece. É uma CLI — nada pra configurar, nada pra instalar no seu build.</p>
-      <div class="terminal"><span class="prompt">$</span> diagscope scan --project .</div>
+    <div class="sh">
+      <h2>Seguro para rodar no código da empresa</h2>
+      <p>O DiagScope foi projetado para funcionar em bases de código proprietárias sem levantar qualquer preocupação de dados ou segurança.</p>
+    </div>
+    <div class="privacy-grid">
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><path d="M8 1L2 4v4c0 3.3 2.5 6.3 6 7 3.5-.7 6-3.7 6-7V4L8 1z"/></svg></div>
+        <div><h3>Seu código nunca sai da sua máquina</h3><p>O DiagScope não faz requisições de rede durante a análise. Sem telemetria, sem verificações de licença, sem backend em nuvem de qualquer tipo.</p></div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v.5"/></svg></div>
+        <div><h3>Nada é coletado ou transmitido</h3><p>Sem analytics, sem relatório de erros, sem pings de atualização. O DiagScope não sabe que você o executou, qual projeto analisou ou o que encontrou.</p></div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2M2 7h12"/></svg></div>
+        <div><h3>Nenhum código é executado ou compilado</h3><p>A ferramenta lê apenas arquivos <code>.java</code> e <code>.kt</code>. Nunca invoca o compilador, executa testes ou carrega as classes da sua aplicação.</p></div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><path d="M3 8h10M8 3v10"/><circle cx="8" cy="8" r="6"/></svg></div>
+        <div><h3>Os resultados ficam onde você os coloca</h3><p>Os arquivos de saída são gravados no seu sistema de arquivos local. Nada é enviado ou compartilhado a menos que você escolha explicitamente fazer isso.</p></div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><polyline points="1 4 1 1 4 1"/><polyline points="15 4 15 1 12 1"/><polyline points="4 15 1 15 1 12"/><polyline points="12 15 15 15 15 12"/><rect x="4" y="4" width="8" height="8" rx="1"/></svg></div>
+        <div><h3>Verificável por design</h3><p>O DiagScope é um JAR autocontido. <code>sudo lsof -i -p &lt;pid&gt;</code> ou Wireshark confirma zero conexões de rede enquanto ele executa.</p></div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon"><svg viewBox="0 0 16 16"><path d="M2 12l4-4 3 3 5-7"/></svg></div>
+        <div><h3>Código-fonte disponível para seu time</h3><p>Membros autorizados da equipe podem solicitar acesso ao repositório fonte para auditar a ferramenta antes de implantá-la internamente.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="border-top:1px solid var(--line);padding:88px 0;">
+  <div class="wrap">
+    <div class="cta-wrap">
+      <h2>Experimente no seu próprio código.</h2>
+      <p>Aponte para um projeto real e veja o que aparece. Dois comandos e você já está rodando.</p>
+      <div class="brew-cmd">
+        <span><span class="br-pr">$</span> <span class="br-cmd">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span></span>
+      </div>
       <div class="cta-actions">
-        <a href="https://github.com/DiagScope/diagscope/releases" class="btn btn-primary">Baixar a CLI</a>
-        <a href="https://github.com/DiagScope/diagscope" class="btn btn-ghost">Ver o código no GitHub</a>
+        <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-white">Homebrew tap →</a>
+        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-ghost-light">Relatório de exemplo</a>
       </div>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="wrap footer-grid">
-    <span>DiagScope — cobertura de diagnóstico estática para aplicações Java.</span>
-    <div class="footer-links">
-      <a href="https://github.com/DiagScope/diagscope">GitHub</a>
-      <a href="#rules">Roadmap</a>
-      <a href="#problem">Por que existe</a>
+  <div class="wrap foot-row">
+    <span class="foot-brand"><strong>DiagScope</strong> — cobertura de diagnóstico estático para Java &amp; Kotlin.</span>
+    <div class="foot-links">
+      <a href="https://github.com/DiagScope/homebrew-tap" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" target="_blank" rel="noopener">Relatório de exemplo</a>
     </div>
   </div>
 </footer>
-
 </body>
 </html>
