@@ -175,7 +175,7 @@ footer{border-top:1px solid var(--line);padding:40px 0 52px;}
     <div class="nav-links">
       <a href="#problem">Por qué existe</a>
       <a href="#how">Cómo funciona</a>
-      <a href="#rules">44 reglas</a>
+      <a href="#rules">82 reglas</a>
       <a href="#install">Instalar</a>
     </div>
     <div class="nav-right">
@@ -207,7 +207,7 @@ footer{border-top:1px solid var(--line);padding:40px 0 52px;}
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.0-alpha.1 · payment-service</span>
+        <span class="tl tl-brand">  DiagScope 0.1.0-alpha.7 · payment-service</span>
         <span class="tl tl-dim">  8 archivos · 47 métodos · 6 flujos · 312 ms</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">  ✗ SILENT_CATCH              PaymentService.java:47</span>
@@ -299,24 +299,32 @@ footer{border-top:1px solid var(--line);padding:40px 0 52px;}
 <section id="rules">
   <div class="wrap">
     <div class="sh">
-      <h2>44 reglas en 12 categorías</h2>
+      <h2>82 reglas en 20 categorías</h2>
       <p>Cada regla tiene una afirmación precisa, una huella digital determinística y un nivel de confianza. Ejecuta <code>diagscope explain &lt;RULE_ID&gt;</code> para ver qué significa un hallazgo y cómo corregirlo.</p>
     </div>
     <div class="cat-grid">
-      <div class="cat-cell"><span class="cat-count">5 reglas</span><div class="cat-name">Manejo de excepciones</div><div class="cat-rules">SILENT_CATCH<br>SILENT_FAILURE_CONVERSION<br>LOG_WITHOUT_THROWABLE<br>GENERIC_EXCEPTION_MESSAGE<br>DUPLICATE_DIAGNOSTIC_SIGNAL</div></div>
-      <div class="cat-cell"><span class="cat-count">3 reglas</span><div class="cat-name">Transacciones</div><div class="cat-rules">TX_ROLLBACK_SUPPRESSED<br>TX_PROPAGATION_MISMATCH<br>MISSING_TX_ANNOTATION</div></div>
-      <div class="cat-cell"><span class="cat-count">4 reglas</span><div class="cat-name">Base de datos</div><div class="cat-rules">JDBC_RESOURCE_NOT_CLOSED<br>DB_RESOURCE_CLOSE_NOT_GUARDED<br>JPA_ENTITY_MANAGER_NOT_CLOSED<br>JDBC_TEMPLATE_CONN_ESCAPE</div></div>
-      <div class="cat-cell"><span class="cat-count">6 reglas</span><div class="cat-name">Resiliencia</div><div class="cat-rules">ASYNC_RESULT_UNOBSERVED<br>HTTP_CLIENT_ERROR_DISCARDED<br>SCHEDULED_TASK_SWALLOWS<br>RETRY_WITHOUT_DIAGNOSTICS<br>FALLBACK_HIDES_FAILURE<br>HTTP_TIMEOUT_NOT_SET</div></div>
-      <div class="cat-cell"><span class="cat-count">5 regras</span><div class="cat-name">Concurrencia</div><div class="cat-rules">LOCK_NOT_RELEASED<br>THREAD_LOCAL_LEAK<br>FUTURE_GET_NO_TIMEOUT<br>BLOCKING_IN_REACTIVE<br>CHECK_THEN_ACT_ON_MAP</div></div>
-      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Kafka</div><div class="cat-rules">KAFKA_SEND_RESULT_IGNORED<br>KAFKA_ACK_NOT_INVOKED<br>KAFKA_LISTENER_NOT_PROPAGATED</div></div>
-      <div class="cat-cell"><span class="cat-count">7 regras</span><div class="cat-name">Observabilidad</div><div class="cat-rules">HIGH_CARDINALITY_TAG<br>DYNAMIC_METRIC_NAME<br>METRIC_CREATED_IN_LOOP<br>SENSITIVE_PAYLOAD_LOGGED<br>MDC_CONTEXT_LOST<br>PRINT_STACK_TRACE<br>SYSTEM_OUTPUT</div></div>
-      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">AOP / Proxy</div><div class="cat-rules">AOP_SELF_INVOCATION<br>AOP_ADVICE_NOT_APPLIED<br>AOP_UNMANAGED_ADVICE</div></div>
-      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Reactivo</div><div class="cat-rules">MUTINY_FAILURE_RECOVERED<br>REACTIVE_MSG_NOT_PROPAGATED<br>MUTINY_SUBSCRIPTION_UNOBSERVED</div></div>
-      <div class="cat-cell"><span class="cat-count">3 regras</span><div class="cat-name">Mantenibilidad</div><div class="cat-rules">EXCESSIVE_METHOD_PARAMS<br>HIGH_METHOD_COMPLEXITY<br>GOD_CLASS_DETECTED</div></div>
-      <div class="cat-cell"><span class="cat-count">1 regra</span><div class="cat-name">Rendimiento</div><div class="cat-rules">N_PLUS_ONE_QUERY_RISK</div></div>
-      <div class="cat-cell"><span class="cat-count">1 regra</span><div class="cat-name">Null safety</div><div class="cat-rules">OPTIONAL_GET_WITHOUT_CHECK</div></div>
+      <div class="cat-cell"><span class="cat-count">5 reglas</span><div class="cat-name">Manejo de excepciones</div><div class="cat-rules">SILENT_CATCH<br>SILENT_FAILURE_CONVERSION<br>DUPLICATE_DIAGNOSTIC_SIGNAL<br>INTERRUPTED_EXCEPTION_SWALLOWED<br>EXCEPTION_SUPPRESSED_IN_FINALLY</div></div>
+      <div class="cat-cell"><span class="cat-count">6 reglas</span><div class="cat-name">Logging</div><div class="cat-rules">LOG_WITHOUT_THROWABLE<br>GENERIC_EXCEPTION_MESSAGE<br>SENSITIVE_PAYLOAD_LOGGED<br>MDC_CONTEXT_LOST<br>PRINT_STACK_TRACE<br>SYSTEM_OUTPUT</div></div>
+      <div class="cat-cell"><span class="cat-count">7 reglas</span><div class="cat-name">Concurrencia</div><div class="cat-rules">LOCK_NOT_RELEASED<br>THREAD_LOCAL_LEAK<br>FUTURE_GET_WITHOUT_TIMEOUT<br>BLOCKING_CALL_IN_REACTIVE_CONTEXT<br>CHECK_THEN_ACT_ON_MAP<br>COMPLETABLEFUTURE_EXCEPTION_NOT_HANDLED<br>EXECUTOR_NOT_SHUTDOWN</div></div>
+      <div class="cat-cell"><span class="cat-count">7 reglas</span><div class="cat-name">Kafka</div><div class="cat-rules">KAFKA_SEND_RESULT_IGNORED<br>KAFKA_ACK_NOT_INVOKED<br>KAFKA_LISTENER_ERROR_NOT_PROPAGATED<br>KAFKA_DEAD_LETTER_NOT_CONFIGURED<br>KAFKA_RETRY_WITHOUT_BACKOFF<br>KAFKA_TOPIC_HARDCODED<br>OUTBOX_PATTERN_MISSING</div></div>
+      <div class="cat-cell"><span class="cat-count">10 reglas</span><div class="cat-name">Rendimiento</div><div class="cat-rules">N_PLUS_ONE_QUERY_RISK<br>BULK_OPERATION_IN_LOOP<br>HTTP_CLIENT_CREATED_PER_REQUEST<br>OBJECT_MAPPER_CREATED_PER_REQUEST<br>TRANSACTION_WITH_HTTP_CALL<br>MISSING_PAGINATION<br>TRANSACTIONAL_READONLY_MISSING<br>ASYNC_DEFAULT_EXECUTOR<br>MULTIPLE_SCHEDULED_NO_THREAD_POOL<br>CACHE_EVICT_MISSING</div></div>
+      <div class="cat-cell"><span class="cat-count">8 reglas</span><div class="cat-name">Resiliencia</div><div class="cat-rules">ASYNC_RESULT_UNOBSERVED<br>HTTP_CLIENT_ERROR_DISCARDED<br>HTTP_TIMEOUT_NOT_SET<br>RETRY_WITHOUT_DIAGNOSTICS<br>FALLBACK_HIDES_FAILURE<br>FEIGN_CLIENT_NO_FALLBACK<br>RETRY_ON_ALL_EXCEPTIONS<br>SCHEDULED_EXCEPTION_NOT_HANDLED</div></div>
+      <div class="cat-cell"><span class="cat-count">3 reglas</span><div class="cat-name">Transacciones</div><div class="cat-rules">TX_ROLLBACK_SUPPRESSED<br>TX_PROPAGATION_MISMATCH<br>MISSING_TRANSACTION_ANNOTATION</div></div>
+      <div class="cat-cell"><span class="cat-count">4 reglas</span><div class="cat-name">Base de datos</div><div class="cat-rules">JDBC_RESOURCE_NOT_CLOSED<br>DB_RESOURCE_CLOSE_NOT_GUARDED<br>JPA_ENTITY_MANAGER_NOT_CLOSED<br>JDBC_TEMPLATE_CONNECTION_ESCAPE</div></div>
+      <div class="cat-cell"><span class="cat-count">4 reglas</span><div class="cat-name">Seguridad</div><div class="cat-rules">SECRET_IN_STRING_LITERAL<br>CORS_WILDCARD_ORIGIN<br>MASS_ASSIGNMENT_RISK<br>ENTITY_EXPOSED_IN_REST_RESPONSE</div></div>
+      <div class="cat-cell"><span class="cat-count">5 reglas</span><div class="cat-name">Observabilidad</div><div class="cat-rules">HIGH_CARDINALITY_METRIC_TAG<br>DYNAMIC_METRIC_NAME<br>METRIC_CREATED_IN_LOOP<br>SPAN_NOT_CLOSED<br>MISSING_RESPONSE_STATUS</div></div>
+      <div class="cat-cell"><span class="cat-count">4 reglas</span><div class="cat-name">AOP</div><div class="cat-rules">AOP_SELF_INVOCATION<br>AOP_ADVICE_NOT_APPLIED<br>AOP_UNMANAGED_ADVICE_TARGET<br>SYNCHRONIZED_ON_SPRING_BEAN</div></div>
+      <div class="cat-cell"><span class="cat-count">4 reglas</span><div class="cat-name">AOP / Bypass de proxy</div><div class="cat-rules">ASYNC_ON_PRIVATE_METHOD<br>AOP_ADVICE_ON_PRIVATE_METHOD<br>TRANSACTIONAL_ON_INTERFACE<br>TRANSACTIONAL_ON_FINAL_METHOD</div></div>
+      <div class="cat-cell"><span class="cat-count">3 reglas</span><div class="cat-name">Reactivo</div><div class="cat-rules">REACTIVE_MESSAGE_ERROR_NOT_PROPAGATED<br>MUTINY_FAILURE_RECOVERED_SILENTLY<br>MUTINY_SUBSCRIPTION_FAILURE_UNOBSERVED</div></div>
+      <div class="cat-cell"><span class="cat-count">3 reglas</span><div class="cat-name">Mantenibilidad</div><div class="cat-rules">EXCESSIVE_METHOD_PARAMETERS<br>HIGH_METHOD_COMPLEXITY<br>GOD_CLASS_DETECTED</div></div>
+      <div class="cat-cell"><span class="cat-count">2 reglas</span><div class="cat-name">Configuración</div><div class="cat-rules">VALUE_WITHOUT_DEFAULT<br>SCHEDULED_NO_INITIAL_DELAY</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regla</span><div class="cat-name">Null safety</div><div class="cat-rules">OPTIONAL_GET_WITHOUT_CHECK</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regla</span><div class="cat-name">Planificación</div><div class="cat-rules">SCHEDULED_TASK_SWALLOWS_FAILURE</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regla</span><div class="cat-name">Spring</div><div class="cat-rules">FIELD_INJECTION_USED</div></div>
+      <div class="cat-cell"><span class="cat-count">1 regla</span><div class="cat-name">Corrección</div><div class="cat-rules">SCHEDULED_NON_VOID_RETURN</div></div>
+      <div class="cat-cell"><span class="cat-count">3 reglas</span><div class="cat-name">Kotlin coroutines</div><div class="cat-rules">COROUTINE_EXCEPTION_NOT_HANDLED<br>FLOW_EXCEPTION_NOT_CAUGHT<br>BLOCKING_CALL_IN_COROUTINE</div></div>
     </div>
-    <p class="rules-note"><strong>diagscope rules</strong> lista todas las reglas con severidad y versión. <strong>diagscope explain &lt;ID&gt;</strong> imprime qué detecta la regla, por qué importa y cómo corregirla. Suprime un hallazgo específico con <code>// diagscope:ignore RULE_ID -- motivo</code>.</p>
+    <p class="rules-note"><strong>diagscope rules</strong> lista todas las reglas con severidad y versión. <strong>diagscope explain &lt;ID&gt;</strong> imprime qué detecta la regla, por qué importa y cómo corregirla. Suprime un hallazgo específico con <code>// diagscope:ignore RULE_ID -- motivo</code>. Tres reglas son exclusivas de Kotlin (coroutines); el resto funciona igual en Java y Kotlin.</p>
   </div>
 </section>
 
