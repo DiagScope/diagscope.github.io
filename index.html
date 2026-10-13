@@ -4,821 +4,336 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiagScope — Static analysis for Java &amp; Kotlin</title>
-<meta name="description" content="DiagScope finds code that silently destroys diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts, and more. Runs locally, no data leaves your machine.">
+<meta name="description" content="DiagScope finds code that silently destroys diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts, and more.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ─── Tokens (light-first) ─── */
 :root {
-  --bg:       #F5F2EB;
-  --surface:  #EDEAE2;
-  --surface-2:#E4E1D8;
-  --line:     #D3CEBD;
-  --ink:      #1C1917;
-  --ink-2:    #3D3832;
-  --muted:    #7A7264;
-  --subtle:   #A09890;
-
-  --brand:    #2D5A4A;
-  --brand-lt: #3E7D68;
-  --brand-bg: rgba(45,90,74,.07);
-  --brand-border: rgba(45,90,74,.25);
-
-  --signal:   #B8440F;
-  --signal-lt:#D45715;
-  --signal-bg:rgba(184,68,15,.07);
-  --signal-border:rgba(184,68,15,.25);
-
-  --warn:     #8A6900;
-  --warn-bg:  rgba(138,105,0,.07);
-  --warn-border:rgba(138,105,0,.25);
-
-  --code-bg:  #1E1B16;
-  --code-text:#D4CBBA;
-  --code-kw:  #7EB8A0;
-  --code-ty:  #D4966A;
-  --code-cm:  #6B6357;
-  --code-st:  #98B87A;
-  --code-hl:  rgba(184,68,15,.12);
-  --code-hl-border: #B8440F;
-
-  --radius:   10px;
+  --bg:      #ffffff;
+  --bg2:     #f8fafc;
+  --line:    #e2e8f0;
+  --ink:     #0f172a;
+  --ink2:    #334155;
+  --muted:   #64748b;
+  --brand:   #16a34a;
+  --brand-d: #15803d;
+  --brand-bg:#f0fdf4;
+  --brand-br:#bbf7d0;
+  --err:     #dc2626;
+  --warn:    #d97706;
+  --info:    #2563eb;
+  --ok:      #16a34a;
+  --code-bg: #0f172a;
+  --code-fg: #cbd5e1;
+  --radius:  10px;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:       #1A1714;
-    --surface:  #242019;
-    --surface-2:#2D2922;
-    --line:     #3A352C;
-    --ink:      #EDE8DF;
-    --ink-2:    #C8BFB2;
-    --muted:    #8A8075;
-    --subtle:   #5A554D;
-
-    --brand:    #5BAE8C;
-    --brand-lt: #72C5A5;
-    --brand-bg: rgba(91,174,140,.1);
-    --brand-border:rgba(91,174,140,.3);
-
-    --signal:   #E07040;
-    --signal-lt:#F08558;
-    --signal-bg:rgba(224,112,64,.1);
-    --signal-border:rgba(224,112,64,.3);
-
-    --warn:     #C09A30;
-    --warn-bg:  rgba(192,154,48,.1);
-    --warn-border:rgba(192,154,48,.3);
-
-    --code-bg:  #111009;
-    --code-text:#C8BFB2;
-  }
-}
-:root[data-theme="dark"] {
-  --bg:#1A1714;--surface:#242019;--surface-2:#2D2922;--line:#3A352C;
-  --ink:#EDE8DF;--ink-2:#C8BFB2;--muted:#8A8075;--subtle:#5A554D;
-  --brand:#5BAE8C;--brand-lt:#72C5A5;--brand-bg:rgba(91,174,140,.1);--brand-border:rgba(91,174,140,.3);
-  --signal:#E07040;--signal-lt:#F08558;--signal-bg:rgba(224,112,64,.1);--signal-border:rgba(224,112,64,.3);
-  --warn:#C09A30;--warn-bg:rgba(192,154,48,.1);--warn-border:rgba(192,154,48,.3);
-  --code-bg:#111009;--code-text:#C8BFB2;
-}
-
-/* ─── Reset ─── */
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0f172a;--bg2:#1e293b;--line:#334155;
+  --ink:#f1f5f9;--ink2:#cbd5e1;--muted:#94a3b8;
+  --brand:#4ade80;--brand-d:#22c55e;--brand-bg:#052e16;--brand-br:#166534;
+  --code-bg:#020617;--code-fg:#94a3b8;
+}}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{
-  background:var(--bg);
-  color:var(--ink);
-  font-family:'DM Sans',system-ui,sans-serif;
-  font-size:16px;line-height:1.65;
-  -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.01em;text-wrap:balance;}
-code,.mono{font-family:'JetBrains Mono','Fira Code',monospace;}
-a{color:inherit;}
-img{max-width:100%;}
-.wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+code{font-family:'JetBrains Mono',monospace;}
+a{color:inherit;text-decoration:none;}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
 
-/* ─── Nav ─── */
-nav.bar{
-  position:sticky;top:0;z-index:50;
-  background:#1C1917;
-  border-bottom:1px solid rgba(255,255,255,.07);
-}
-nav.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;}
-.brand{
-  display:flex;align-items:center;gap:9px;
-  font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
-  color:#F5F2EB;text-decoration:none;letter-spacing:.01em;
-}
-.brand-icon{
-  width:24px;height:24px;border-radius:6px;
-  background:var(--brand);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.brand-icon svg{width:13px;height:13px;fill:none;stroke:#F5F2EB;stroke-width:2.2;stroke-linecap:round;}
-.nav-links{display:none;gap:26px;font-size:.88rem;color:rgba(245,242,235,.55);}
-.nav-links a{text-decoration:none;transition:color .15s;}
-.nav-links a:hover{color:#F5F2EB;}
-@media(min-width:720px){.nav-links{display:flex;}}
-.nav-right{display:flex;align-items:center;gap:12px;}
-.nav-brew{
-  display:inline-flex;align-items:center;gap:7px;
-  padding:7px 14px;border-radius:7px;
-  background:var(--brand);color:#F0EFEA;
-  font-size:.84rem;font-weight:500;text-decoration:none;
-  transition:background .15s;
-}
-.nav-brew:hover{background:var(--brand-lt);}
-.lang-sw{
-  display:flex;align-items:center;gap:0;
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(245,242,235,.4);
-}
-.lang-sw a{text-decoration:none;color:rgba(245,242,235,.4);padding:4px 7px;border-radius:4px;transition:color .15s;}
-.lang-sw a:hover{color:#F5F2EB;}
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:var(--code-bg);border-bottom:1px solid rgba(255,255,255,.06);}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;}
+.logo{display:flex;align-items:center;gap:8px;color:#f1f5f9;font-size:.9rem;font-weight:600;letter-spacing:.01em;}
+.logo-icon{width:22px;height:22px;border-radius:5px;background:var(--brand);display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.lang-sw{display:flex;gap:2px;font-family:'JetBrains Mono',monospace;font-size:.7rem;}
+.lang-sw a{color:rgba(241,245,249,.35);padding:3px 6px;border-radius:4px;transition:color .15s;}
+.lang-sw a:hover{color:#f1f5f9;}
 .lang-sw a.on{color:var(--brand);}
-.lang-sep{padding:0 1px;}
+.nav-gh{display:inline-flex;align-items:center;gap:6px;color:rgba(241,245,249,.55);font-size:.82rem;transition:color .15s;}
+.nav-gh:hover{color:#f1f5f9;}
+.nav-gh svg{width:15px;height:15px;fill:currentColor;}
 
-/* ─── Hero ─── */
-.hero{padding:80px 0 72px;border-bottom:1px solid var(--line);}
-.hero-grid{display:grid;grid-template-columns:1fr;gap:52px;align-items:center;}
-@media(min-width:900px){.hero-grid{grid-template-columns:1.1fr .9fr;gap:64px;}}
+/* hero */
+.hero{padding:80px 0 72px;}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:48px;align-items:center;}
+@media(min-width:860px){.hero-grid{grid-template-columns:1fr 1fr;gap:56px;}}
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);background:var(--brand-bg);border:1px solid var(--brand-br);padding:4px 10px;border-radius:20px;margin-bottom:20px;}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:600;line-height:1.1;letter-spacing:-.025em;color:var(--ink);}
+h1 em{font-style:normal;color:var(--brand);}
+.hero-sub{margin-top:16px;font-size:1.05rem;color:var(--muted);max-width:44ch;line-height:1.7;}
+.hero-cmds{margin-top:28px;display:flex;flex-direction:column;gap:8px;}
+.cmd{display:inline-flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--ink2);}
+.cmd .pr{color:var(--muted);}
+.cmd .g{color:var(--brand);}
+.hero-note{margin-top:12px;font-size:.82rem;color:var(--muted);}
 
-.hero-tag{
-  display:inline-flex;align-items:center;gap:7px;
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--brand);border:1px solid var(--brand-border);background:var(--brand-bg);
-  padding:5px 11px;border-radius:20px;margin-bottom:24px;
-}
-h1.hed{
-  font-size:clamp(2.2rem,5.5vw,3.5rem);line-height:1.06;color:var(--ink);
-}
-h1.hed em{font-style:italic;color:var(--signal);}
-.hero-sub{
-  margin-top:20px;font-size:1.05rem;color:var(--muted);max-width:44ch;line-height:1.7;
-}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px;}
-.btn{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:12px 22px;border-radius:8px;
-  font-size:.93rem;font-weight:500;text-decoration:none;
-  transition:transform .15s,box-shadow .15s,background .15s,border-color .15s;
-}
-.btn-green{background:var(--brand);color:#F0EFEA;}
-.btn-green:hover{background:var(--brand-lt);transform:translateY(-1px);box-shadow:0 8px 24px rgba(45,90,74,.22);}
-.btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);}
-.btn-outline:hover{border-color:var(--muted);background:var(--surface);}
-.hero-cmd{
-  margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:.79rem;color:var(--muted);
-}
-.hero-cmd span{color:var(--brand);}
-
-/* ─── Terminal frame ─── */
-.term-frame{
-  background:var(--code-bg);border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;overflow:hidden;
-  box-shadow:0 24px 60px -16px rgba(0,0,0,.28);
-}
-.term-bar{
-  display:flex;align-items:center;gap:7px;
-  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07);
-  background:rgba(255,255,255,.03);
-}
-.tdot{width:9px;height:9px;border-radius:50%;}
-.tdot-r{background:#E05252;} .tdot-y{background:#D4A520;} .tdot-g{background:#4CAF78;}
-.term-title{
-  margin-left:6px;font-family:'JetBrains Mono',monospace;font-size:.72rem;
-  color:rgba(212,203,186,.35);
-}
-.term-body{padding:20px 22px 22px;font-family:'JetBrains Mono',monospace;font-size:.81rem;line-height:1.8;}
-.tl{display:block;color:var(--code-text);}
-.tl-cmd{color:#8ABE8A;}
-.tl-dim{color:rgba(212,203,186,.35);}
-.tl-brand{color:#7EB8A0;font-weight:500;}
-.tl-err{color:#E07060;}
-.tl-warn{color:#C09A30;}
-.tl-info{color:#7898C0;}
-.tl-ok{color:#6AAF82;}
-.tl-path{color:rgba(212,203,186,.55);}
-.tl-final{color:rgba(212,203,186,.7);}
-.tl-gap{display:block;height:.4em;}
-
-/* Reveal animation */
-.tl{opacity:0;animation:lineIn .12s ease-out forwards;}
-.tl:nth-child(1){animation-delay:.1s}
-.tl:nth-child(2){animation-delay:.6s}
-.tl:nth-child(3){animation-delay:.9s}
-.tl:nth-child(4){animation-delay:1.1s}
-.tl:nth-child(5){animation-delay:1.3s}
-.tl:nth-child(6){animation-delay:1.5s}
-.tl:nth-child(7){animation-delay:1.7s}
-.tl:nth-child(8){animation-delay:1.9s}
-.tl:nth-child(9){animation-delay:2.1s}
-.tl:nth-child(10){animation-delay:2.3s}
-.tl:nth-child(11){animation-delay:2.5s}
-.tl:nth-child(12){animation-delay:2.7s}
-.tl:nth-child(13){animation-delay:2.9s}
-.tl:nth-child(14){animation-delay:3.1s}
-.tl:nth-child(15){animation-delay:3.3s}
-.tl:nth-child(16){animation-delay:3.5s}
-@keyframes lineIn{from{opacity:0;transform:translateX(-3px)}to{opacity:1;transform:none}}
+/* terminal */
+.term{background:var(--code-bg);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px -12px rgba(0,0,0,.35);}
+.term-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
+.dot{width:9px;height:9px;border-radius:50%;}
+.dot-r{background:#ff5f57;}.dot-y{background:#ffbd2e;}.dot-g{background:#28c840;}
+.term-label{margin-left:6px;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(203,213,225,.25);}
+.term-body{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.85;}
+.tl{display:block;color:var(--code-fg);}
+.tl-cmd{color:#86efac;}
+.tl-dim{color:rgba(148,163,184,.3);}
+.tl-brand{color:#6ee7b7;font-weight:500;}
+.tl-err{color:#f87171;}
+.tl-warn{color:#fbbf24;}
+.tl-info{color:#60a5fa;}
+.tl-ok{color:#4ade80;}
+.tl-gap{display:block;height:.35em;}
+.tl-fin{color:rgba(203,213,225,.6);}
+.tl{opacity:0;animation:lineIn .1s ease-out forwards;}
+.tl:nth-child(1){animation-delay:.1s}.tl:nth-child(2){animation-delay:.5s}
+.tl:nth-child(3){animation-delay:.8s}.tl:nth-child(4){animation-delay:1s}
+.tl:nth-child(5){animation-delay:1.2s}.tl:nth-child(6){animation-delay:1.4s}
+.tl:nth-child(7){animation-delay:1.6s}.tl:nth-child(8){animation-delay:1.8s}
+.tl:nth-child(9){animation-delay:2s}.tl:nth-child(10){animation-delay:2.2s}
+.tl:nth-child(11){animation-delay:2.4s}.tl:nth-child(12){animation-delay:2.6s}
+@keyframes lineIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.tl{opacity:1;animation:none;}}
 
-/* ─── Sections ─── */
-section{padding:88px 0;border-top:1px solid var(--line);}
-.sh{margin-bottom:52px;max-width:600px;}
-.sh h2{font-size:clamp(1.65rem,3.5vw,2.3rem);color:var(--ink);}
-.sh p{color:var(--muted);margin-top:14px;font-size:1.02rem;line-height:1.7;}
+/* what section */
+.what{padding:72px 0;border-top:1px solid var(--line);}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:12px;display:block;}
+h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:600;letter-spacing:-.02em;color:var(--ink);}
+.what-sub{margin-top:12px;font-size:1rem;color:var(--muted);max-width:52ch;line-height:1.7;}
+.findings{display:grid;grid-template-columns:1fr;gap:12px;margin-top:36px;}
+@media(min-width:640px){.findings{grid-template-columns:1fr 1fr;}}
+@media(min-width:1000px){.findings{grid-template-columns:repeat(3,1fr);}}
+.finding{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+.finding-id{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.04em;margin-bottom:8px;display:inline-block;padding:2px 8px;border-radius:20px;}
+.f-err{color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);}
+.f-warn{color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);}
+.finding h3{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.finding p{font-size:.84rem;color:var(--muted);line-height:1.6;}
 
-/* ─── Problem ─── */
-.prob-grid{display:grid;grid-template-columns:1fr;gap:44px;align-items:start;}
-@media(min-width:900px){.prob-grid{grid-template-columns:1fr 1fr;}}
+/* install */
+.install{padding:72px 0;border-top:1px solid var(--line);}
+.steps{display:grid;grid-template-columns:1fr;gap:32px;margin-top:36px;}
+@media(min-width:720px){.steps{grid-template-columns:1fr 1fr 1fr;}}
+.step{display:flex;flex-direction:column;gap:10px;}
+.step-n{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--brand);font-weight:500;}
+.step h3{font-size:.95rem;font-weight:600;color:var(--ink);}
+.step p{font-size:.86rem;color:var(--muted);}
+.step .cmd{margin-top:4px;}
 
-.prob-items{display:flex;flex-direction:column;gap:0;}
-.prob-item{
-  display:flex;gap:18px;padding:20px 0;border-top:1px solid var(--line);
-}
-.prob-item:first-child{border-top:none;padding-top:0;}
-.prob-num{
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;
-  color:var(--signal);flex-shrink:0;padding-top:3px;
-}
-.prob-item h3{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px;}
-.prob-item p{font-size:.93rem;color:var(--muted);}
+/* use section */
+.use{padding:72px 0;border-top:1px solid var(--line);}
+.use-grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:36px;}
+@media(min-width:720px){.use-grid{grid-template-columns:1fr 1fr;}}
+.use-item h3{font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.use-item p{font-size:.86rem;color:var(--muted);margin-bottom:10px;}
 
-.code-card{
-  background:var(--code-bg);border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;overflow:hidden;
-}
-.code-card-bar{
-  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);
-  font-family:'JetBrains Mono',monospace;font-size:.71rem;color:rgba(212,203,186,.35);
-  background:rgba(255,255,255,.025);
-}
-.code-card-body{
-  padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.82rem;
-  color:var(--code-text);line-height:1.75;overflow-x:auto;
-}
-.ck{color:var(--code-kw);}
-.ct{color:var(--code-ty);}
-.cc{color:var(--code-cm);font-style:italic;}
-.cs{color:var(--code-st);}
-.c-hl{
-  display:block;
-  background:rgba(184,68,15,.13);
-  border-left:2px solid #B8440F;
-  margin:0 -20px;padding:0 20px 0 18px;
-}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-hl{background:rgba(224,112,64,.12);border-color:#E07040;}}
-:root[data-theme="dark"] .c-hl{background:rgba(224,112,64,.12);border-color:#E07040;}
+/* cta */
+.cta{padding:72px 0;border-top:1px solid var(--line);}
+.cta-inner{background:var(--code-bg);border-radius:14px;padding:52px 36px;text-align:center;}
+.cta-inner h2{color:#f1f5f9;}
+.cta-inner p{color:rgba(241,245,249,.5);margin-top:10px;font-size:.95rem;max-width:40ch;margin-left:auto;margin-right:auto;}
+.brew-cmd{display:inline-flex;align-items:center;margin-top:28px;padding:12px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#f1f5f9;gap:10px;}
+.brew-cmd .pr{color:rgba(241,245,249,.35);}
+.brew-cmd .g{color:#86efac;}
+.cta-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:7px;font-size:.88rem;font-weight:500;transition:opacity .15s;}
+.btn-white{background:#f1f5f9;color:#0f172a;}
+.btn-white:hover{background:#fff;}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.18);color:#f1f5f9;}
+.btn-ghost:hover{border-color:rgba(255,255,255,.4);}
 
-/* ─── How it works ─── */
-.how-steps{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
-@media(min-width:720px){.how-steps{grid-template-columns:repeat(3,1fr);}}
-.how-step{background:var(--bg);padding:32px 28px;}
-.how-num{
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;
-  color:var(--brand);letter-spacing:.04em;margin-bottom:14px;display:block;
-}
-.how-step h3{font-family:'DM Sans',sans-serif;font-size:1.02rem;font-weight:600;margin-bottom:8px;}
-.how-step p{font-size:.92rem;color:var(--muted);}
-
-/* ─── Rules grid ─── */
-.cat-grid{
-  display:grid;grid-template-columns:1fr;gap:1px;
-  background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
-}
-@media(min-width:520px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
-@media(min-width:880px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
-.cat-cell{background:var(--bg);padding:22px 20px;transition:background .15s;min-width:0;}
-.cat-cell:hover{background:var(--surface);}
-.cat-name{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
-.cat-rules{
-  font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);
-  line-height:1.75;overflow-wrap:break-word;word-break:break-word;
-}
-.cat-count{
-  font-family:'JetBrains Mono',monospace;font-size:.68rem;
-  color:var(--brand);border:1px solid var(--brand-border);
-  background:var(--brand-bg);padding:2px 7px;border-radius:20px;
-  display:inline-block;margin-bottom:10px;
-}
-
-.rules-note{
-  margin-top:20px;padding:16px 20px;border:1px solid var(--line);
-  border-radius:8px;font-size:.9rem;color:var(--muted);
-}
-.rules-note strong{color:var(--ink);}
-.rules-note code{
-  font-size:.82rem;background:var(--surface-2);padding:1px 6px;
-  border-radius:4px;color:var(--ink-2);
-}
-
-/* ─── Install section ─── */
-.install-grid{display:grid;grid-template-columns:1fr;gap:44px;}
-@media(min-width:900px){.install-grid{grid-template-columns:1fr 1fr;}}
-
-.step-list{display:flex;flex-direction:column;gap:28px;}
-.install-step{display:flex;gap:18px;}
-.step-num{
-  width:28px;height:28px;border-radius:50%;border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);margin-top:2px;
-}
-.install-step h3{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;margin-bottom:6px;}
-.install-step p{font-size:.92rem;color:var(--muted);}
-.cmd-block{
-  margin-top:10px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:8px;padding:11px 15px;font-family:'JetBrains Mono',monospace;
-  font-size:.83rem;color:var(--ink-2);overflow-x:auto;white-space:nowrap;
-}
-.cmd-block .pr{color:var(--muted);}
-.cmd-block .cmd-green{color:var(--brand);}
-
-.usage-list{display:flex;flex-direction:column;gap:20px;}
-.usage-item h4{font-family:'DM Sans',sans-serif;font-size:.93rem;font-weight:600;margin-bottom:6px;}
-.usage-item p{font-size:.88rem;color:var(--muted);margin-bottom:8px;}
-
-/* ─── Privacy section ─── */
-.privacy-grid{
-  display:grid;grid-template-columns:1fr;gap:16px;
-}
-@media(min-width:720px){.privacy-grid{grid-template-columns:repeat(2,1fr);}}
-@media(min-width:1024px){.privacy-grid{grid-template-columns:repeat(3,1fr);}}
-.privacy-item{
-  display:flex;gap:14px;padding:20px;
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-}
-.privacy-icon{
-  width:32px;height:32px;border-radius:8px;
-  background:var(--brand-bg);border:1px solid var(--brand-border);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
-}
-.privacy-icon svg{width:15px;height:15px;stroke:var(--brand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.privacy-item h3{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:5px;}
-.privacy-item p{font-size:.88rem;color:var(--muted);line-height:1.6;}
-
-/* ─── CTA ─── */
-.cta-wrap{
-  background:#1C1917;border-radius:16px;padding:60px 40px;text-align:center;
-}
-.cta-wrap h2{font-size:clamp(1.7rem,3.5vw,2.4rem);color:#F5F2EB;}
-.cta-wrap p{color:rgba(245,242,235,.55);margin-top:12px;font-size:1.02rem;max-width:44ch;margin-left:auto;margin-right:auto;}
-.brew-cmd{
-  display:inline-flex;align-items:center;gap:12px;margin-top:32px;
-  padding:14px 22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-  border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:.88rem;color:#F5F2EB;
-  max-width:100%;overflow-x:auto;
-}
-.brew-cmd .br-pr{color:rgba(245,242,235,.4);}
-.brew-cmd .br-cmd{color:#7EB8A0;}
-.cta-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:28px;}
-.btn-white{background:#F5F2EB;color:#1C1917;}
-.btn-white:hover{background:#fff;transform:translateY(-1px);}
-.btn-ghost-light{background:transparent;border:1px solid rgba(255,255,255,.2);color:#F5F2EB;}
-.btn-ghost-light:hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.06);}
-
-/* ─── Footer ─── */
-footer{border-top:1px solid var(--line);padding:40px 0 52px;}
-.foot-row{display:flex;flex-direction:column;gap:16px;}
-@media(min-width:720px){.foot-row{flex-direction:row;justify-content:space-between;align-items:center;}}
-.foot-brand{font-size:.9rem;color:var(--muted);}
-.foot-brand strong{color:var(--ink);}
-.foot-links{display:flex;gap:22px;font-size:.88rem;color:var(--muted);}
-.foot-links a{text-decoration:none;color:var(--muted);transition:color .15s;}
+/* footer */
+footer{border-top:1px solid var(--line);padding:32px 0;}
+.foot{display:flex;flex-direction:column;gap:12px;}
+@media(min-width:640px){.foot{flex-direction:row;justify-content:space-between;align-items:center;}}
+.foot-brand{font-size:.85rem;color:var(--muted);}
+.foot-brand strong{color:var(--ink2);}
+.foot-links{display:flex;gap:20px;font-size:.84rem;}
+.foot-links a{color:var(--muted);transition:color .15s;}
 .foot-links a:hover{color:var(--ink);}
 </style>
 </head>
 <body>
 
-<!-- ═══ NAV ═══ -->
-<nav class="bar">
+<nav>
   <div class="wrap">
-    <a href="#" class="brand">
-      <span class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 14 14"><path d="M2 7h10M7 2v10M4 4l6 6M10 4l-6 6"/></svg>
-      </span>
+    <a href="#" class="logo">
+      <span class="logo-icon"><svg viewBox="0 0 12 12"><path d="M1 6h10M6 1v10M3 3l6 6M9 3l-6 6"/></svg></span>
       DiagScope
     </a>
-    <div class="nav-links">
-      <a href="#problem">Why it exists</a>
-      <a href="#how">How it works</a>
-      <a href="#rules">82 rules</a>
-      <a href="#install">Install</a>
-    </div>
     <div class="nav-right">
-      <a href="#install" class="nav-brew">Install via Homebrew</a>
+      <a href="https://github.com/DiagScope/homebrew-tap" class="nav-gh" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
       <div class="lang-sw">
-        <a href="index.html" class="on">EN</a><span class="lang-sep">·</span><a href="index-es.html">ES</a><span class="lang-sep">·</span><a href="index-pt.html">PT</a>
+        <a href="index.html" class="on">EN</a>·<a href="index-es.html">ES</a>·<a href="index-pt.html">PT</a>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- ═══ HERO ═══ -->
 <header class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="hero-tag">Static analysis · Java &amp; Kotlin</span>
-      <h1 class="hed">Will this code explain itself<br>when it <em>breaks</em> in production?</h1>
-      <p class="hero-sub">DiagScope follows real call flows and finds code that silently destroys diagnostic evidence — before an incident forces you to find out it was missing.</p>
-      <div class="hero-actions">
-        <a href="#install" class="btn btn-green">Install via Homebrew</a>
-        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-outline">See example report</a>
+      <span class="badge">Static analysis · Java &amp; Kotlin</span>
+      <h1>Find the code that <em>hides failures</em> before production does</h1>
+      <p class="hero-sub">DiagScope scans Java and Kotlin projects for patterns that silently destroy diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts. Runs locally, no data leaves your machine.</p>
+      <div class="hero-cmds">
+        <div class="cmd"><span class="pr">$</span> <span class="g">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span></div>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
       </div>
-      <p class="hero-cmd"><span>$</span> diagscope scan --project .</p>
+      <p class="hero-note">No build required &nbsp;·&nbsp; Java &amp; Kotlin &nbsp;·&nbsp; Spring / Quarkus / Micronaut</p>
     </div>
 
-    <div class="term-frame" aria-label="Example terminal output">
+    <div class="term" aria-label="Example terminal output">
       <div class="term-bar">
-        <span class="tdot tdot-r"></span><span class="tdot tdot-y"></span><span class="tdot tdot-g"></span>
-        <span class="term-title">terminal</span>
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="term-label">terminal</span>
       </div>
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.0-alpha.7 · payment-service</span>
-        <span class="tl tl-dim">  8 files · 47 methods · 6 flows · 312 ms</span>
+        <span class="tl tl-brand">  DiagScope 0.1.0 · payment-service</span>
+        <span class="tl tl-dim">  12 files · 61 methods · 8 flows · 340 ms</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">  ✗ SILENT_CATCH              PaymentService.java:47</span>
         <span class="tl tl-err">  ✗ FUTURE_GET_NO_TIMEOUT     ReportService.java:83</span>
         <span class="tl tl-warn">  ⚠ MISSING_TX_ANNOTATION     OrderService.java:31</span>
         <span class="tl tl-warn">  ⚠ HTTP_TIMEOUT_NOT_SET      NotificationService.java:22</span>
         <span class="tl tl-warn">  ⚠ N_PLUS_ONE_QUERY_RISK     OrderService.java:61</span>
-        <span class="tl tl-info">  ℹ GOD_CLASS_DETECTED        PaymentOrchestrator.java</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-final">  6 findings · report.html ready</span>
+        <span class="tl tl-fin">  5 findings · report.html generated</span>
       </div>
     </div>
   </div>
 </header>
 
-<!-- ═══ PROBLEM ═══ -->
-<section id="problem">
-  <div class="wrap prob-grid">
-    <div>
-      <div class="sh" style="margin-bottom:0;">
-        <h2>Some failures don't fail loud enough.</h2>
-        <p>Datadog, Grafana, New Relic — they can only surface the signals your code actually produced. If the exception was swallowed, the transaction wasn't rolled back, or the HTTP call had no timeout, no dashboard will conjure that evidence during an incident.</p>
+<section class="what">
+  <div class="wrap">
+    <span class="sec-label">What it finds</span>
+    <h2>Code that fails silently</h2>
+    <p class="what-sub">82 rules across exceptions, transactions, concurrency, Kafka, performance, security, and more. Every finding names the entrypoint that reaches the problem.</p>
+    <div class="findings">
+      <div class="finding">
+        <span class="finding-id f-err">SILENT_CATCH</span>
+        <h3>Swallowed exception</h3>
+        <p>Caught and never logged or re-thrown — the failure simply disappears.</p>
       </div>
-      <div class="prob-items" style="margin-top:32px;">
-        <div class="prob-item">
-          <span class="prob-num">01</span>
-          <div>
-            <h3>An exception disappears</h3>
-            <p>Caught and never logged, propagated, or acted on. Whatever happened, no one will know.</p>
-          </div>
-        </div>
-        <div class="prob-item">
-          <span class="prob-num">02</span>
-          <div>
-            <h3>A failure looks like success</h3>
-            <p>The exception becomes <code>false</code>, <code>null</code>, or an empty Optional — and the original cause goes with it.</p>
-          </div>
-        </div>
-        <div class="prob-item">
-          <span class="prob-num">03</span>
-          <div>
-            <h3>A write operation has no transaction</h3>
-            <p>If the second save fails, the first is committed and there's no rollback. Data is left inconsistent, silently.</p>
-          </div>
-        </div>
-        <div class="prob-item">
-          <span class="prob-num">04</span>
-          <div>
-            <h3>An HTTP call has no timeout</h3>
-            <p>A slow upstream holds a thread forever. Under load, the pool exhausts and the entire service stops responding.</p>
-          </div>
-        </div>
+      <div class="finding">
+        <span class="finding-id f-err">FUTURE_GET_NO_TIMEOUT</span>
+        <h3>Blocking call without timeout</h3>
+        <p>A thread hangs indefinitely waiting for a result that may never come.</p>
       </div>
-    </div>
-    <div class="code-card">
-      <div class="code-card-bar">OrderService.java</div>
-      <div class="code-card-body">
-<span class="ck">public</span> <span class="ct">Order</span> createOrder(<span class="ct">OrderRequest</span> req) {<br>
-&nbsp;&nbsp;<span class="c-hl"><span class="cc">// no @Transactional — if reserve() throws,</span></span>
-&nbsp;&nbsp;<span class="c-hl"><span class="cc">// the saved order is never rolled back</span></span>
-&nbsp;&nbsp;<span class="ct">Order</span> order = orderRepo.save(<span class="ck">new</span> <span class="ct">Order</span>(req));<br>
-&nbsp;&nbsp;inventory.reserve(req.items());<br>
-&nbsp;&nbsp;<span class="ck">return</span> order;<br>
-}<br>
-<br>
-<span class="ct">String</span> callNotification(<span class="ct">String</span> uri) {<br>
-&nbsp;&nbsp;<span class="ct">Mono</span>&lt;<span class="ct">String</span>&gt; response = webClient.get(uri);<br>
-&nbsp;&nbsp;<span class="c-hl"><span class="cc">// no .timeout() — hangs indefinitely</span></span>
-&nbsp;&nbsp;<span class="ck">return</span> response.block();<br>
-}
+      <div class="finding">
+        <span class="finding-id f-warn">MISSING_TX_ANNOTATION</span>
+        <h3>Write without transaction</h3>
+        <p>If a later step fails, the first write is committed and cannot be rolled back.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">HTTP_TIMEOUT_NOT_SET</span>
+        <h3>HTTP call with no timeout</h3>
+        <p>A slow upstream exhausts the thread pool and takes the whole service down.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">N_PLUS_ONE_QUERY_RISK</span>
+        <h3>N+1 query in loop</h3>
+        <p>A database call inside a loop — scales linearly and degrades with data growth.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-err">KAFKA_SEND_RESULT_IGNORED</span>
+        <h3>Kafka send not observed</h3>
+        <p>The publish result is dropped — failures are invisible to the caller.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ HOW IT WORKS ═══ -->
-<section id="how">
+<section class="install">
   <div class="wrap">
-    <div class="sh">
-      <h2>How it works</h2>
-      <p>DiagScope reads source files and reasons about structure. It never compiles your project, never runs your code, and never sends anything outside your machine.</p>
-    </div>
-    <div class="how-steps">
-      <div class="how-step">
-        <span class="how-num">Parse</span>
-        <h3>Reads every source file</h3>
-        <p>All <code>.java</code> and <code>.kt</code> files are parsed into a language-neutral model. Method calls, annotations, catch blocks, loops — everything rules need to reason about.</p>
+    <span class="sec-label">Install</span>
+    <h2>Up and running in two commands</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-n">01 — Add the tap</span>
+        <h3>Install via Homebrew</h3>
+        <p>Java is bundled automatically — nothing else to configure.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">brew tap DiagScope/tap</span></div>
+        <div class="cmd" style="margin-top:6px;"><span class="pr">$</span> <span class="g">brew install diagscope</span></div>
       </div>
-      <div class="how-step">
-        <span class="how-num">Build flows</span>
-        <h3>Follows real execution paths</h3>
-        <p>For each entrypoint — REST endpoint, Kafka listener, <code>@Scheduled</code> method, or any public method — it follows the call graph inward and collects all reachable methods into a <em>flow</em>.</p>
+      <div class="step">
+        <span class="step-n">02 — Scan</span>
+        <h3>Point at a project</h3>
+        <p>No build step required. Works with Maven and Gradle layouts.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
       </div>
-      <div class="how-step">
-        <span class="how-num">Run rules</span>
-        <h3>Every finding has context</h3>
-        <p>Each rule sees every method in every flow. Findings name the entrypoint that reaches the problem so you know the operational context. Ambiguous paths are reported as flow boundaries, never guesses.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ RULES ═══ -->
-<section id="rules">
-  <div class="wrap">
-    <div class="sh">
-      <h2>82 rules across 20 categories</h2>
-      <p>Every rule has a precise claim, a deterministic fingerprint, and a confidence level. Run <code>diagscope explain &lt;RULE_ID&gt;</code> to see what a finding means and how to fix it.</p>
-    </div>
-    <div class="cat-grid">
-      <div class="cat-cell">
-        <span class="cat-count">5 rules</span>
-        <div class="cat-name">Exception handling</div>
-        <div class="cat-rules">SILENT_CATCH<br>SILENT_FAILURE_CONVERSION<br>DUPLICATE_DIAGNOSTIC_SIGNAL<br>INTERRUPTED_EXCEPTION_SWALLOWED<br>EXCEPTION_SUPPRESSED_IN_FINALLY</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">6 rules</span>
-        <div class="cat-name">Logging</div>
-        <div class="cat-rules">LOG_WITHOUT_THROWABLE<br>GENERIC_EXCEPTION_MESSAGE<br>SENSITIVE_PAYLOAD_LOGGED<br>MDC_CONTEXT_LOST<br>PRINT_STACK_TRACE<br>SYSTEM_OUTPUT</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">7 rules</span>
-        <div class="cat-name">Concurrency</div>
-        <div class="cat-rules">LOCK_NOT_RELEASED<br>THREAD_LOCAL_LEAK<br>FUTURE_GET_WITHOUT_TIMEOUT<br>BLOCKING_CALL_IN_REACTIVE_CONTEXT<br>CHECK_THEN_ACT_ON_MAP<br>COMPLETABLEFUTURE_EXCEPTION_NOT_HANDLED<br>EXECUTOR_NOT_SHUTDOWN</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">7 rules</span>
-        <div class="cat-name">Kafka</div>
-        <div class="cat-rules">KAFKA_SEND_RESULT_IGNORED<br>KAFKA_ACK_NOT_INVOKED<br>KAFKA_LISTENER_ERROR_NOT_PROPAGATED<br>KAFKA_DEAD_LETTER_NOT_CONFIGURED<br>KAFKA_RETRY_WITHOUT_BACKOFF<br>KAFKA_TOPIC_HARDCODED<br>OUTBOX_PATTERN_MISSING</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">10 rules</span>
-        <div class="cat-name">Performance</div>
-        <div class="cat-rules">N_PLUS_ONE_QUERY_RISK<br>BULK_OPERATION_IN_LOOP<br>HTTP_CLIENT_CREATED_PER_REQUEST<br>OBJECT_MAPPER_CREATED_PER_REQUEST<br>TRANSACTION_WITH_HTTP_CALL<br>MISSING_PAGINATION<br>TRANSACTIONAL_READONLY_MISSING<br>ASYNC_DEFAULT_EXECUTOR<br>MULTIPLE_SCHEDULED_NO_THREAD_POOL<br>CACHE_EVICT_MISSING</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">8 rules</span>
-        <div class="cat-name">Resilience</div>
-        <div class="cat-rules">ASYNC_RESULT_UNOBSERVED<br>HTTP_CLIENT_ERROR_DISCARDED<br>HTTP_TIMEOUT_NOT_SET<br>RETRY_WITHOUT_DIAGNOSTICS<br>FALLBACK_HIDES_FAILURE<br>FEIGN_CLIENT_NO_FALLBACK<br>RETRY_ON_ALL_EXCEPTIONS<br>SCHEDULED_EXCEPTION_NOT_HANDLED</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">3 rules</span>
-        <div class="cat-name">Transactions</div>
-        <div class="cat-rules">TX_ROLLBACK_SUPPRESSED<br>TX_PROPAGATION_MISMATCH<br>MISSING_TRANSACTION_ANNOTATION</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">4 rules</span>
-        <div class="cat-name">Database</div>
-        <div class="cat-rules">JDBC_RESOURCE_NOT_CLOSED<br>DB_RESOURCE_CLOSE_NOT_GUARDED<br>JPA_ENTITY_MANAGER_NOT_CLOSED<br>JDBC_TEMPLATE_CONNECTION_ESCAPE</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">4 rules</span>
-        <div class="cat-name">Security</div>
-        <div class="cat-rules">SECRET_IN_STRING_LITERAL<br>CORS_WILDCARD_ORIGIN<br>MASS_ASSIGNMENT_RISK<br>ENTITY_EXPOSED_IN_REST_RESPONSE</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">5 rules</span>
-        <div class="cat-name">Observability</div>
-        <div class="cat-rules">HIGH_CARDINALITY_METRIC_TAG<br>DYNAMIC_METRIC_NAME<br>METRIC_CREATED_IN_LOOP<br>SPAN_NOT_CLOSED<br>MISSING_RESPONSE_STATUS</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">4 rules</span>
-        <div class="cat-name">AOP</div>
-        <div class="cat-rules">AOP_SELF_INVOCATION<br>AOP_ADVICE_NOT_APPLIED<br>AOP_UNMANAGED_ADVICE_TARGET<br>SYNCHRONIZED_ON_SPRING_BEAN</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">4 rules</span>
-        <div class="cat-name">AOP / Proxy bypass</div>
-        <div class="cat-rules">ASYNC_ON_PRIVATE_METHOD<br>AOP_ADVICE_ON_PRIVATE_METHOD<br>TRANSACTIONAL_ON_INTERFACE<br>TRANSACTIONAL_ON_FINAL_METHOD</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">3 rules</span>
-        <div class="cat-name">Reactive</div>
-        <div class="cat-rules">REACTIVE_MESSAGE_ERROR_NOT_PROPAGATED<br>MUTINY_FAILURE_RECOVERED_SILENTLY<br>MUTINY_SUBSCRIPTION_FAILURE_UNOBSERVED</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">3 rules</span>
-        <div class="cat-name">Maintainability</div>
-        <div class="cat-rules">EXCESSIVE_METHOD_PARAMETERS<br>HIGH_METHOD_COMPLEXITY<br>GOD_CLASS_DETECTED</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">2 rules</span>
-        <div class="cat-name">Configuration</div>
-        <div class="cat-rules">VALUE_WITHOUT_DEFAULT<br>SCHEDULED_NO_INITIAL_DELAY</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">1 rule</span>
-        <div class="cat-name">Null safety</div>
-        <div class="cat-rules">OPTIONAL_GET_WITHOUT_CHECK</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">1 rule</span>
-        <div class="cat-name">Scheduling</div>
-        <div class="cat-rules">SCHEDULED_TASK_SWALLOWS_FAILURE</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">1 rule</span>
-        <div class="cat-name">Spring</div>
-        <div class="cat-rules">FIELD_INJECTION_USED</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">1 rule</span>
-        <div class="cat-name">Correctness</div>
-        <div class="cat-rules">SCHEDULED_NON_VOID_RETURN</div>
-      </div>
-      <div class="cat-cell">
-        <span class="cat-count">3 rules</span>
-        <div class="cat-name">Kotlin coroutines</div>
-        <div class="cat-rules">COROUTINE_EXCEPTION_NOT_HANDLED<br>FLOW_EXCEPTION_NOT_CAUGHT<br>BLOCKING_CALL_IN_COROUTINE</div>
-      </div>
-    </div>
-    <p class="rules-note">
-      <strong>diagscope rules</strong> lists every rule with severity and version. <strong>diagscope explain &lt;ID&gt;</strong> prints what it detects, why it matters, and how to fix it. Suppress a specific finding with <code>// diagscope:ignore RULE_ID -- reason</code>. Three rules are Kotlin-only (coroutines); all others run on Java and Kotlin equally.
-    </p>
-  </div>
-</section>
-
-<!-- ═══ INSTALL ═══ -->
-<section id="install">
-  <div class="wrap">
-    <div class="sh">
-      <h2>Get started in two commands</h2>
-      <p>DiagScope is distributed via Homebrew. Java 25 is installed automatically — nothing else to configure.</p>
-    </div>
-    <div class="install-grid">
-      <div class="step-list">
-        <div class="install-step">
-          <div class="step-num">1</div>
-          <div>
-            <h3>Install</h3>
-            <p>Add the tap and install. Java 25 comes with it.</p>
-            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">brew tap DiagScope/tap</span></div>
-            <div class="cmd-block" style="margin-top:6px;"><span class="pr">$</span> <span class="cmd-green">brew install diagscope</span></div>
-          </div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">2</div>
-          <div>
-            <h3>Run</h3>
-            <p>Point it at any Java or Kotlin project. No build required.</p>
-            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">diagscope scan --project /path/to/project</span></div>
-          </div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">3</div>
-          <div>
-            <h3>Read the report</h3>
-            <p>Results in <code>target/diagscope/</code> (Maven) or <code>build/diagscope/</code> (Gradle).</p>
-            <div class="cmd-block" style="white-space:normal;line-height:1.8;">
-              report<span style="color:var(--brand);">.html</span> &nbsp;← interactive<br>
-              report<span style="color:var(--muted);">.md</span> &nbsp;&nbsp;&nbsp;← for PR review<br>
-              result<span style="color:var(--muted);">.json</span> &nbsp;← automation
-            </div>
-          </div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">↑</div>
-          <div>
-            <h3>Update</h3>
-            <div class="cmd-block"><span class="pr">$</span> <span class="cmd-green">brew update &amp;&amp; brew upgrade diagscope</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="usage-list">
-        <div class="usage-item">
-          <h4>Spring, Quarkus, Micronaut</h4>
-          <p>REST endpoints, Kafka listeners, and <code>@Scheduled</code> jobs are detected automatically as entrypoints.</p>
-          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project .</div>
-        </div>
-        <div class="usage-item">
-          <h4>Framework-free Java or Kotlin</h4>
-          <p>Libraries and plain projects — every public method becomes an entrypoint.</p>
-          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . --entrypoint PUBLIC_METHOD</div>
-        </div>
-        <div class="usage-item">
-          <h4>CI gate — only changed files</h4>
-          <p>Fail the build only on findings in files touched by this PR.</p>
-          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . \<br>&nbsp;&nbsp;--changed-since origin/main --fail-on ERROR</div>
-        </div>
-        <div class="usage-item">
-          <h4>Baseline — gate only new findings</h4>
-          <p>Record the current state, then only block on regressions going forward.</p>
-          <div class="cmd-block"><span class="pr">$</span> diagscope scan --project . --update-baseline<br><span class="pr">$</span> diagscope scan --project . --baseline --fail-on ERROR</div>
-        </div>
-        <div class="usage-item">
-          <h4>Explore the rules</h4>
-          <div class="cmd-block"><span class="pr">$</span> diagscope rules<br><span class="pr">$</span> diagscope explain SILENT_CATCH</div>
+      <div class="step">
+        <span class="step-n">03 — Read the report</span>
+        <h3>Results in seconds</h3>
+        <p>HTML, Markdown, and JSON outputs in <code>target/diagscope/</code> or <code>build/diagscope/</code>.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.76rem;">
+          <span><span style="color:var(--brand)">report.html</span> &nbsp;← interactive</span>
+          <span><span style="color:var(--muted)">report.md</span> &nbsp;&nbsp;← for PR review</span>
+          <span><span style="color:var(--muted)">result.json</span> &nbsp;← automation</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ PRIVACY ═══ -->
-<section id="privacy">
+<section class="use">
   <div class="wrap">
-    <div class="sh">
-      <h2>Safe to run on company code</h2>
-      <p>DiagScope is designed from the ground up to work on proprietary codebases without raising any data or security concerns.</p>
-    </div>
-    <div class="privacy-grid">
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><path d="M8 1L2 4v4c0 3.3 2.5 6.3 6 7 3.5-.7 6-3.7 6-7V4L8 1z"/></svg>
-        </div>
-        <div>
-          <h3>Your code never leaves your machine</h3>
-          <p>DiagScope makes zero network requests during analysis. No telemetry, no licence checks, no cloud backend of any kind.</p>
+    <span class="sec-label">Usage</span>
+    <h2>Common commands</h2>
+    <div class="use-grid">
+      <div class="use-item">
+        <h3>Scan a Spring project</h3>
+        <p>REST endpoints, Kafka listeners, and scheduled jobs are detected as entrypoints automatically.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
+      </div>
+      <div class="use-item">
+        <h3>CI gate — only new findings</h3>
+        <p>Fail the build only on findings introduced in this PR, leaving existing issues for later.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --update-baseline</span></span>
+          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --baseline --fail-on ERROR</span></span>
         </div>
       </div>
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v.5"/></svg>
-        </div>
-        <div>
-          <h3>Nothing is collected or transmitted</h3>
-          <p>No analytics, no crash reporting, no update pings. DiagScope does not know you ran it, what project you analyzed, or what it found.</p>
-        </div>
+      <div class="use-item">
+        <h3>Explain a finding</h3>
+        <p>Get the full description, why it matters, and how to fix it.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope explain SILENT_CATCH</span></div>
       </div>
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2M2 7h12"/></svg>
-        </div>
-        <div>
-          <h3>No code is executed or compiled</h3>
-          <p>The tool reads <code>.java</code> and <code>.kt</code> files only. It never invokes the compiler, runs tests, or loads your application's classes.</p>
-        </div>
-      </div>
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><path d="M3 8h10M8 3v10"/><circle cx="8" cy="8" r="6"/></svg>
-        </div>
-        <div>
-          <h3>Results stay where you put them</h3>
-          <p>Output files are written to your local filesystem. Nothing is uploaded or shared unless you explicitly choose to do so.</p>
-        </div>
-      </div>
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><polyline points="1 4 1 1 4 1"/><polyline points="15 4 15 1 12 1"/><polyline points="4 15 1 15 1 12"/><polyline points="12 15 15 15 15 12"/><rect x="4" y="4" width="8" height="8" rx="1"/></svg>
-        </div>
-        <div>
-          <h3>Verifiable by design</h3>
-          <p>DiagScope is a self-contained JAR. <code>sudo lsof -i -p &lt;pid&gt;</code> or Wireshark confirms zero network connections while it runs.</p>
-        </div>
-      </div>
-      <div class="privacy-item">
-        <div class="privacy-icon">
-          <svg viewBox="0 0 16 16"><path d="M2 12l4-4 3 3 5-7"/></svg>
-        </div>
-        <div>
-          <h3>Source available to your team</h3>
-          <p>Authorised team members can request access to the source repository to audit the tool before deploying it internally.</p>
-        </div>
+      <div class="use-item">
+        <h3>List all rules</h3>
+        <p>See all 82 rules with severity, category, and version.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope rules</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ CTA ═══ -->
-<section style="border-top:1px solid var(--line);padding:88px 0;">
+<section class="cta">
   <div class="wrap">
-    <div class="cta-wrap">
+    <div class="cta-inner">
       <h2>Try it on your own code.</h2>
-      <p>Point it at a real project and see what comes back. Two commands and you're running.</p>
+      <p>Two commands and you're running.</p>
       <div class="brew-cmd">
-        <span><span class="br-pr">$</span> <span class="br-cmd">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span></span>
+        <span class="pr">$</span>
+        <span class="g">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span>
       </div>
-      <div class="cta-actions">
-        <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-white">Homebrew tap →</a>
-        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-ghost-light">Example report</a>
+      <div class="cta-btns">
+        <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-white" target="_blank" rel="noopener">Homebrew tap →</a>
+        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-ghost" target="_blank" rel="noopener">Example report</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ FOOTER ═══ -->
 <footer>
-  <div class="wrap foot-row">
+  <div class="wrap foot">
     <span class="foot-brand"><strong>DiagScope</strong> — static diagnostic coverage for Java &amp; Kotlin.</span>
     <div class="foot-links">
       <a href="https://github.com/DiagScope/homebrew-tap" target="_blank" rel="noopener">GitHub</a>
