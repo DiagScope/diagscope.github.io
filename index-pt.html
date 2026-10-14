@@ -119,6 +119,16 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
 .foot-links{display:flex;gap:20px;font-size:.84rem;}
 .foot-links a{color:var(--muted);transition:color .15s;}
 .foot-links a:hover{color:var(--ink);}
+
+/* report preview */
+.preview{padding:72px 0;border-top:1px solid var(--line);}
+.preview p.sub{margin-top:12px;font-size:1rem;color:var(--muted);max-width:60ch;line-height:1.7;}
+.preview figure{margin:32px 0 0;}
+.preview .shot{display:block;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 30px rgba(15,23,42,.08);max-height:900px;position:relative;}
+.preview .shot img{display:block;width:100%;height:auto;}
+.preview .shot::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,var(--bg));}
+.preview figcaption{margin-top:14px;font-size:.86rem;color:var(--muted);}
+.preview figcaption a{color:var(--brand);}
 </style>
 </head>
 <body>
@@ -181,7 +191,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
   <div class="wrap">
     <span class="sec-label">O que encontra</span>
     <h2>Código que falha silenciosamente</h2>
-    <p class="what-sub">82 regras cobrindo exceções, transações, concorrência, Kafka, performance, segurança e mais. Cada ocorrência identifica o entrypoint que chega ao problema.</p>
+    <p class="what-sub">Exceções, transações, concorrência, Kafka, performance, segurança e mais. Cada ocorrência identifica o entrypoint que chega ao problema.</p>
     <div class="findings">
       <div class="finding">
         <span class="finding-id f-err">SILENT_CATCH</span>
@@ -249,6 +259,20 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
   </div>
 </section>
 
+<section class="preview" id="report">
+  <div class="wrap">
+    <span class="sec-label">Relatório</span>
+    <h2>Como é o relatório</h2>
+    <p class="sub">Abra o <code>report.html</code> em qualquer navegador. É um único arquivo autocontido: sem servidor, sem rede. Ele ordena o que corrigir primeiro, filtra por severidade e confiança e mostra o caminho de chamadas do entrypoint até cada ocorrência.</p>
+    <figure>
+      <a class="shot" href="example-report.html" aria-label="Abrir o relatório de exemplo">
+        <img src="assets/report-preview.png" width="1360" height="2600" loading="lazy" alt="Relatório HTML do DiagScope: resumo executivo por regra, severidade e confiança, lista "Fix these first" ordenada e ocorrências com arquivo, linha e o fluxo que chega até elas">
+      </a>
+      <figcaption>Relatório real gerado a partir de um projeto de exemplo pequeno. <a href="example-report.html">Abrir o relatório de exemplo →</a></figcaption>
+    </figure>
+  </div>
+</section>
+
 <section class="use">
   <div class="wrap">
     <span class="sec-label">Como usar</span>
@@ -273,9 +297,12 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
         <div class="cmd"><span class="pr">$</span> <span class="g">diagscope explain SILENT_CATCH</span></div>
       </div>
       <div class="use-item">
-        <h3>Listar todas as regras</h3>
-        <p>Veja as 82 regras com severidade, categoria e versão.</p>
-        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope rules</span></div>
+        <h3>Consultar as regras</h3>
+        <p>O catálogo cresce a cada versão, então pergunte à ferramenta: ela lista todas as regras com severidade, categoria e versão.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope rules</span></span>
+          <span><span class="pr">$</span> <span class="g">diagscope rules --format JSON</span></span>
+        </div>
       </div>
     </div>
   </div>
@@ -292,7 +319,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
       </div>
       <div class="cta-btns">
         <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-white" target="_blank" rel="noopener">Homebrew tap →</a>
-        <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" class="btn btn-ghost" target="_blank" rel="noopener">Exemplo de relatório</a>
+        <a href="example-report.html" class="btn btn-ghost">Exemplo de relatório</a>
       </div>
     </div>
   </div>
@@ -303,7 +330,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
     <span class="foot-brand"><strong>DiagScope</strong> — cobertura estática de diagnóstico para Java e Kotlin.</span>
     <div class="foot-links">
       <a href="https://github.com/DiagScope/homebrew-tap" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/DiagScope/homebrew-tap/blob/main/docs/example-report.html" target="_blank" rel="noopener">Exemplo de relatório</a>
+      <a href="example-report.html">Exemplo de relatório</a>
     </div>
   </div>
 </footer>
