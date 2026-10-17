@@ -7,171 +7,17 @@
 <meta name="description" content="DiagScope finds code that silently destroys diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts, and more.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:      #ffffff;
-  --bg2:     #f8fafc;
-  --line:    #e2e8f0;
-  --ink:     #0f172a;
-  --ink2:    #334155;
-  --muted:   #64748b;
-  --brand:   #16a34a;
-  --brand-d: #15803d;
-  --brand-bg:#f0fdf4;
-  --brand-br:#bbf7d0;
-  --err:     #dc2626;
-  --warn:    #d97706;
-  --info:    #2563eb;
-  --ok:      #16a34a;
-  --code-bg: #0f172a;
-  --code-fg: #cbd5e1;
-  --radius:  10px;
-}
-@media(prefers-color-scheme:dark){:root{
-  --bg:#0f172a;--bg2:#1e293b;--line:#334155;
-  --ink:#f1f5f9;--ink2:#cbd5e1;--muted:#94a3b8;
-  --brand:#4ade80;--brand-d:#22c55e;--brand-bg:#052e16;--brand-br:#166534;
-  --code-bg:#020617;--code-fg:#94a3b8;
-}}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
-code{font-family:'JetBrains Mono',monospace;}
-a{color:inherit;text-decoration:none;}
-.wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
-
-/* nav */
-nav{position:sticky;top:0;z-index:50;background:var(--code-bg);border-bottom:1px solid rgba(255,255,255,.06);}
-nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;}
-.logo{display:flex;align-items:center;gap:8px;color:#f1f5f9;font-size:.9rem;font-weight:600;letter-spacing:.01em;}
-.logo-icon{width:22px;height:22px;border-radius:5px;background:var(--brand);display:flex;align-items:center;justify-content:center;}
-.logo-icon svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;}
-.nav-right{display:flex;align-items:center;gap:16px;}
-.lang-sw{display:flex;gap:2px;font-family:'JetBrains Mono',monospace;font-size:.7rem;}
-.lang-sw a{color:rgba(241,245,249,.35);padding:3px 6px;border-radius:4px;transition:color .15s;}
-.lang-sw a:hover{color:#f1f5f9;}
-.lang-sw a.on{color:var(--brand);}
-.nav-gh{display:inline-flex;align-items:center;gap:6px;color:rgba(241,245,249,.55);font-size:.82rem;transition:color .15s;}
-.nav-gh:hover{color:#f1f5f9;}
-.nav-gh svg{width:15px;height:15px;fill:currentColor;}
-
-/* hero */
-.hero{padding:80px 0 72px;}
-.hero-grid{display:grid;grid-template-columns:1fr;gap:48px;align-items:center;}
-@media(min-width:860px){.hero-grid{grid-template-columns:1fr 1fr;gap:56px;}}
-.badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);background:var(--brand-bg);border:1px solid var(--brand-br);padding:4px 10px;border-radius:20px;margin-bottom:20px;}
-h1{font-size:clamp(2rem,5vw,3rem);font-weight:600;line-height:1.1;letter-spacing:-.025em;color:var(--ink);}
-h1 em{font-style:normal;color:var(--brand);}
-.hero-sub{margin-top:16px;font-size:1.05rem;color:var(--muted);max-width:44ch;line-height:1.7;}
-.hero-cmds{margin-top:28px;display:flex;flex-direction:column;gap:8px;}
-.cmd{display:inline-flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--ink2);}
-.cmd .pr{color:var(--muted);}
-.cmd .g{color:var(--brand);}
-.hero-note{margin-top:12px;font-size:.82rem;color:var(--muted);}
-
-/* terminal */
-.term{background:var(--code-bg);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px -12px rgba(0,0,0,.35);}
-.term-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
-.dot{width:9px;height:9px;border-radius:50%;}
-.dot-r{background:#ff5f57;}.dot-y{background:#ffbd2e;}.dot-g{background:#28c840;}
-.term-label{margin-left:6px;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(203,213,225,.25);}
-.term-body{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.85;}
-.tl{display:block;color:var(--code-fg);}
-.tl-cmd{color:#86efac;}
-.tl-dim{color:rgba(148,163,184,.3);}
-.tl-brand{color:#6ee7b7;font-weight:500;}
-.tl-err{color:#f87171;}
-.tl-warn{color:#fbbf24;}
-.tl-info{color:#60a5fa;}
-.tl-ok{color:#4ade80;}
-.tl-gap{display:block;height:.35em;}
-.tl-fin{color:rgba(203,213,225,.6);}
-.tl{opacity:0;animation:lineIn .1s ease-out forwards;}
-.tl:nth-child(1){animation-delay:.1s}.tl:nth-child(2){animation-delay:.5s}
-.tl:nth-child(3){animation-delay:.8s}.tl:nth-child(4){animation-delay:1s}
-.tl:nth-child(5){animation-delay:1.2s}.tl:nth-child(6){animation-delay:1.4s}
-.tl:nth-child(7){animation-delay:1.6s}.tl:nth-child(8){animation-delay:1.8s}
-.tl:nth-child(9){animation-delay:2s}.tl:nth-child(10){animation-delay:2.2s}
-.tl:nth-child(11){animation-delay:2.4s}.tl:nth-child(12){animation-delay:2.6s}
-@keyframes lineIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.tl{opacity:1;animation:none;}}
-
-/* what section */
-.what{padding:72px 0;border-top:1px solid var(--line);}
-.sec-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:12px;display:block;}
-h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:600;letter-spacing:-.02em;color:var(--ink);}
-.what-sub{margin-top:12px;font-size:1rem;color:var(--muted);max-width:52ch;line-height:1.7;}
-.findings{display:grid;grid-template-columns:1fr;gap:12px;margin-top:36px;}
-@media(min-width:640px){.findings{grid-template-columns:1fr 1fr;}}
-@media(min-width:1000px){.findings{grid-template-columns:repeat(3,1fr);}}
-.finding{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
-.finding-id{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.04em;margin-bottom:8px;display:inline-block;padding:2px 8px;border-radius:20px;}
-.f-err{color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);}
-.f-warn{color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);}
-.finding h3{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:4px;}
-.finding p{font-size:.84rem;color:var(--muted);line-height:1.6;}
-
-/* install */
-.install{padding:72px 0;border-top:1px solid var(--line);}
-.steps{display:grid;grid-template-columns:1fr;gap:32px;margin-top:36px;}
-@media(min-width:720px){.steps{grid-template-columns:1fr 1fr 1fr;}}
-.step{display:flex;flex-direction:column;gap:10px;}
-.step-n{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--brand);font-weight:500;}
-.step h3{font-size:.95rem;font-weight:600;color:var(--ink);}
-.step p{font-size:.86rem;color:var(--muted);}
-.step .cmd{margin-top:4px;}
-
-/* use section */
-.use{padding:72px 0;border-top:1px solid var(--line);}
-.use-grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:36px;}
-@media(min-width:720px){.use-grid{grid-template-columns:1fr 1fr;}}
-.use-item h3{font-size:.95rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
-.use-item p{font-size:.86rem;color:var(--muted);margin-bottom:10px;}
-
-/* cta */
-.cta{padding:72px 0;border-top:1px solid var(--line);}
-.cta-inner{background:var(--code-bg);border-radius:14px;padding:52px 36px;text-align:center;}
-.cta-inner h2{color:#f1f5f9;}
-.cta-inner p{color:rgba(241,245,249,.5);margin-top:10px;font-size:.95rem;max-width:40ch;margin-left:auto;margin-right:auto;}
-.brew-cmd{display:inline-flex;align-items:center;margin-top:28px;padding:12px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#f1f5f9;gap:10px;}
-.brew-cmd .pr{color:rgba(241,245,249,.35);}
-.brew-cmd .g{color:#86efac;}
-.cta-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px;}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:7px;font-size:.88rem;font-weight:500;transition:opacity .15s;}
-.btn-white{background:#f1f5f9;color:#0f172a;}
-.btn-white:hover{background:#fff;}
-.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.18);color:#f1f5f9;}
-.btn-ghost:hover{border-color:rgba(255,255,255,.4);}
-
-/* footer */
-footer{border-top:1px solid var(--line);padding:32px 0;}
-.foot{display:flex;flex-direction:column;gap:12px;}
-@media(min-width:640px){.foot{flex-direction:row;justify-content:space-between;align-items:center;}}
-.foot-brand{font-size:.85rem;color:var(--muted);}
-.foot-brand strong{color:var(--ink2);}
-.foot-links{display:flex;gap:20px;font-size:.84rem;}
-.foot-links a{color:var(--muted);transition:color .15s;}
-.foot-links a:hover{color:var(--ink);}
-
-/* report preview */
-.preview{padding:72px 0;border-top:1px solid var(--line);}
-.preview p.sub{margin-top:12px;font-size:1rem;color:var(--muted);max-width:60ch;line-height:1.7;}
-.preview figure{margin:32px 0 0;}
-.preview .shot{display:block;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 30px rgba(15,23,42,.08);max-height:900px;position:relative;}
-.preview .shot img{display:block;width:100%;height:auto;}
-.preview .shot::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,var(--bg));}
-.preview figcaption{margin-top:14px;font-size:.86rem;color:var(--muted);}
-.preview figcaption a{color:var(--brand);}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<meta name="theme-color" content="#f5efe2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1712" media="(prefers-color-scheme: dark)">
 </head>
 <body>
 
 <nav>
   <div class="wrap">
     <a href="#" class="logo">
-      <span class="logo-icon"><svg viewBox="0 0 12 12"><path d="M1 6h10M6 1v10M3 3l6 6M9 3l-6 6"/></svg></span>
-      DiagScope
+            DiagScope
     </a>
     <div class="nav-right">
       <a href="https://github.com/DiagScope/homebrew-tap" class="nav-gh" target="_blank" rel="noopener">
@@ -200,20 +46,19 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
 
     <div class="term" aria-label="Example terminal output">
       <div class="term-bar">
-        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
         <span class="term-label">terminal</span>
       </div>
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.0 · payment-service</span>
+        <span class="tl tl-brand">  DiagScope 0.1.1 · payment-service</span>
         <span class="tl tl-dim">  12 files · 61 methods · 8 flows · 340 ms</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-err">  ✗ SILENT_CATCH              PaymentService.java:47</span>
-        <span class="tl tl-err">  ✗ FUTURE_GET_NO_TIMEOUT     ReportService.java:83</span>
-        <span class="tl tl-warn">  ⚠ MISSING_TX_ANNOTATION     OrderService.java:31</span>
-        <span class="tl tl-warn">  ⚠ HTTP_TIMEOUT_NOT_SET      NotificationService.java:22</span>
-        <span class="tl tl-warn">  ⚠ N_PLUS_ONE_QUERY_RISK     OrderService.java:61</span>
+        <span class="tl tl-err">  ✗ SILENT_CATCH                   PaymentService.java:47</span>
+        <span class="tl tl-warn">  ⚠ FUTURE_GET_WITHOUT_TIMEOUT     ReportService.java:83</span>
+        <span class="tl tl-warn">  ⚠ MISSING_TRANSACTION_ANNOTATION OrderService.java:31</span>
+        <span class="tl tl-warn">  ⚠ HTTP_TIMEOUT_NOT_SET           AlertService.java:22</span>
+        <span class="tl tl-warn">  ⚠ N_PLUS_ONE_QUERY_RISK          OrderService.java:61</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-fin">  5 findings · report.html generated</span>
       </div>
@@ -233,12 +78,12 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
         <p>Caught and never logged or re-thrown — the failure simply disappears.</p>
       </div>
       <div class="finding">
-        <span class="finding-id f-err">FUTURE_GET_NO_TIMEOUT</span>
+        <span class="finding-id f-warn">FUTURE_GET_WITHOUT_TIMEOUT</span>
         <h3>Blocking call without timeout</h3>
         <p>A thread hangs indefinitely waiting for a result that may never come.</p>
       </div>
       <div class="finding">
-        <span class="finding-id f-warn">MISSING_TX_ANNOTATION</span>
+        <span class="finding-id f-warn">MISSING_TRANSACTION_ANNOTATION</span>
         <h3>Write without transaction</h3>
         <p>If a later step fails, the first write is committed and cannot be rolled back.</p>
       </div>
@@ -253,7 +98,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;}
         <p>A database call inside a loop — scales linearly and degrades with data growth.</p>
       </div>
       <div class="finding">
-        <span class="finding-id f-err">KAFKA_SEND_RESULT_IGNORED</span>
+        <span class="finding-id f-warn">KAFKA_SEND_RESULT_IGNORED</span>
         <h3>Kafka send not observed</h3>
         <p>The publish result is dropped — failures are invisible to the caller.</p>
       </div>
