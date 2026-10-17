@@ -1,26 +1,26 @@
 /*
  * DiagScope site.
  *
- * The idea is a reviewer's notebook: warm paper, dark ink, one red marker for what needs attention and a
- * highlighter for what matters. No gradients, no glow, no rounded card grid. Serif headings, a humanist sans for
+ * The idea is a reviewer's notebook on cool mineral paper: deep green-black ink, one vermilion marker for what
+ * needs attention, teal for what can be clicked and a highlighter for what matters. No gradients, no glow, no rounded card grid. Serif headings, a humanist sans for
  * reading and a monospace only where the content is code.
  */
 :root {
-  --paper:   #f5efe2;
-  --paper2:  #ece4d1;
-  --card:    #fbf7ec;
-  --line:    #d8ccb3;
-  --ink:     #241d16;
-  --ink2:    #51463a;
-  --muted:   #6e6150;
-  --mark:    #b8321c;
-  --mark-d:  #8f2514;
-  --blue:    #264b73;
-  --hi:      rgba(240, 200, 70, .55);
-  --term-bg: #261f18;
-  --term-fg: #eadfc8;
-  --term-dim:#8d7f68;
-  --shadow:  #d8ccb3;
+  --paper:   #f2f5f3;
+  --paper2:  #e6ece8;
+  --card:    #fafcfb;
+  --line:    #cfd9d3;
+  --ink:     #11201d;
+  --ink2:    #3b4c47;
+  --muted:   #5b6c66;
+  --mark:    #c43d17;
+  --mark-d:  #9a2d0f;
+  --blue:    #0b6460;
+  --hi:      rgba(255, 196, 61, .5);
+  --term-bg: #0f1a18;
+  --term-fg: #d6e5df;
+  --term-dim:#7d958d;
+  --shadow:  #cfd9d3;
 
   /* aliases used by inline styles in the pages */
   --brand: var(--mark);
@@ -29,21 +29,21 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper:   #1c1712;
-    --paper2:  #251e17;
-    --card:    #221b15;
-    --line:    #3b3126;
-    --ink:     #efe6d3;
-    --ink2:    #cdbfa5;
-    --muted:   #a29478;
-    --mark:    #e26a52;
-    --mark-d:  #f08d78;
-    --blue:    #8fb0d6;
-    --hi:      rgba(226, 106, 82, .28);
-    --term-bg: #120e0a;
-    --term-fg: #e4d9c0;
-    --term-dim:#7d705c;
-    --shadow:  #0f0b08;
+    --paper:   #0e1513;
+    --paper2:  #131c19;
+    --card:    #121a17;
+    --line:    #25332e;
+    --ink:     #e6efeb;
+    --ink2:    #b5c6bf;
+    --muted:   #8ba099;
+    --mark:    #ff7a52;
+    --mark-d:  #ff9a7a;
+    --blue:    #5fd0c5;
+    --hi:      rgba(255, 122, 82, .25);
+    --term-bg: #070c0b;
+    --term-fg: #d6e5df;
+    --term-dim:#6f8780;
+    --shadow:  #060a09;
   }
 }
 
@@ -113,13 +113,13 @@ h1 em {
 .term-label { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--term-dim); }
 .term-body { padding: 18px 20px 20px; font-family: 'IBM Plex Mono', monospace; font-size: .74rem; line-height: 1.85; overflow-x: auto; }
 .tl { display: block; color: var(--term-fg); white-space: pre; }
-.tl-cmd { color: #f0d9a8; }
+.tl-cmd { color: #9fe3d6; }
 .tl-dim { color: var(--term-dim); }
-.tl-brand { color: #f4e6c4; font-weight: 500; }
+.tl-brand { color: #e6f2ee; font-weight: 500; }
 .tl-err { color: #ef7b63; }
-.tl-warn { color: #e7b04a; }
-.tl-info { color: #8fb4d8; }
-.tl-ok { color: #b9c98b; }
+.tl-warn { color: #f0c25a; }
+.tl-info { color: #7fc3e0; }
+.tl-ok { color: #8fd19a; }
 .tl-gap { display: block; height: .35em; }
 .tl-fin { color: var(--term-dim); }
 .tl { opacity: 0; animation: lineIn .1s ease-out forwards; }
@@ -155,9 +155,9 @@ h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: cla
 .finding-id { font-family: 'IBM Plex Mono', monospace; font-size: .76rem; letter-spacing: .02em; font-weight: 500; padding-top: 4px; }
 .f-err { color: var(--mark); }
 .f-err::before { content: "● "; }
-.f-warn { color: #9a6a0f; }
+.f-warn { color: #8a5a00; }
 .f-warn::before { content: "○ "; }
-@media (prefers-color-scheme: dark) { .f-warn { color: #e0a94a; } }
+@media (prefers-color-scheme: dark) { .f-warn { color: #f0c25a; } }
 .finding h3 { font-family: 'Newsreader', Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--ink); }
 .finding p { font-size: .98rem; color: var(--ink2); line-height: 1.6; }
 
