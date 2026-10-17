@@ -51,7 +51,7 @@
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.2 · payment-service</span>
+        <span class="tl tl-brand">  DiagScope 0.1.3 · payment-service</span>
         <span class="tl tl-dim">  12 archivos · 61 métodos · 8 flujos · 340 ms</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">  ✗ SILENT_CATCH                   PaymentService.java:47</span>
@@ -184,6 +184,41 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="use ai" id="ai">
+  <div class="wrap">
+    <span class="sec-label">Con asistentes de IA</span>
+    <h2>Deja que tu asistente de código revise su propio trabajo</h2>
+    <p class="ai-intro">Cuando el equipo genera código con un asistente, DiagScope puede ejecutarse antes de que el asistente diga que terminó. Así las excepciones tragadas y los logs ausentes se corrigen en la misma sesión y no en producción.</p>
+    <div class="use-grid">
+      <div class="use-item">
+        <h3>Configúralo una vez</h3>
+        <p>Escribe un bloque corto de instrucciones en <code>AGENTS.md</code> y <code>CLAUDE.md</code> y añade un hook de Claude Code que escanea los archivos modificados cuando termina la tarea. El contenido existente nunca se sobrescribe.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope init-agent</span></div>
+      </div>
+      <div class="use-item">
+        <h3>Salida pensada para asistentes</h3>
+        <p>Texto simple y compacto, con el peor problema primero y una línea de corrección para cada uno. Unos 3 KB donde el informe en Markdown tiene 22 KB. El código de salida sigue viniendo de tu gate.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope scan --format AGENT \</span></span>
+          <span><span class="g">    --files src/main/java/PaymentService.java</span></span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Elige el rigor</h3>
+        <p>La tolerancia vive en <code>diagscope.yml</code>, así que se revisa junto con el código. Falla en errores de alta confianza, tolera algunos avisos o define un perfil más estricto para ramas de release.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:2px;font-size:.78rem;">
+          <span class="g" style="white-space:pre">gate:</span>
+          <span class="g" style="white-space:pre">  failOn:</span>
+          <span class="g" style="white-space:pre">    - severity: ERROR</span>
+          <span class="g" style="white-space:pre">      confidence: HIGH</span>
+          <span class="g" style="white-space:pre">  maxFindings: { WARNING: 20 }</span>
+        </div>
+      </div>
+    </div>
+    <p class="ai-note">El hook automático es para Claude Code. Otros asistentes leen las instrucciones de <code>AGENTS.md</code> y ejecutan el mismo comando, pero nada los obliga. Un escaneo tarda de 1 a 15 segundos según el tamaño del proyecto, por eso la comprobación se ejecuta al final de la tarea y no tras cada edición. Se le indica al asistente que no silencie un hallazgo sin preguntarte.</p>
   </div>
 </section>
 

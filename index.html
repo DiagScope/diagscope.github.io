@@ -51,7 +51,7 @@
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.2 · payment-service</span>
+        <span class="tl tl-brand">  DiagScope 0.1.3 · payment-service</span>
         <span class="tl tl-dim">  12 files · 61 methods · 8 flows · 340 ms</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">  ✗ SILENT_CATCH                   PaymentService.java:47</span>
@@ -184,6 +184,41 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="use ai" id="ai">
+  <div class="wrap">
+    <span class="sec-label">With AI assistants</span>
+    <h2>Let your coding assistant check its own work</h2>
+    <p class="ai-intro">When a team generates code with an assistant, DiagScope can run before the assistant says it is done, so swallowed errors and missing logs are fixed in the same session instead of in production.</p>
+    <div class="use-grid">
+      <div class="use-item">
+        <h3>Set it up once</h3>
+        <p>Writes a short instruction block into <code>AGENTS.md</code> and <code>CLAUDE.md</code>, and adds a Claude Code hook that scans the changed files when a task ends. Existing content is never overwritten.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope init-agent</span></div>
+      </div>
+      <div class="use-item">
+        <h3>Output made for assistants</h3>
+        <p>Compact plain text, worst finding first, a fix line for each. About 3 KB where the Markdown report has 22 KB. The exit code still comes from your gate.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope scan --format AGENT \</span></span>
+          <span><span class="g">    --files src/main/java/PaymentService.java</span></span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Choose how strict to be</h3>
+        <p>Tolerance lives in <code>diagscope.yml</code>, so it is reviewed with the code. Fail on high-confidence errors, tolerate a few warnings, or define a stricter profile for release branches.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:2px;font-size:.78rem;">
+          <span class="g" style="white-space:pre">gate:</span>
+          <span class="g" style="white-space:pre">  failOn:</span>
+          <span class="g" style="white-space:pre">    - severity: ERROR</span>
+          <span class="g" style="white-space:pre">      confidence: HIGH</span>
+          <span class="g" style="white-space:pre">  maxFindings: { WARNING: 20 }</span>
+        </div>
+      </div>
+    </div>
+    <p class="ai-note">The automatic hook is for Claude Code. Other assistants read the instructions in <code>AGENTS.md</code> and run the same command, but nothing forces them to. A scan takes 1 to 15 seconds depending on project size, so the check runs when the task ends, not after every edit. The assistant is told not to silence a finding without asking you.</p>
   </div>
 </section>
 
