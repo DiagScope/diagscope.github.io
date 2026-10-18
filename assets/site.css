@@ -7,6 +7,7 @@
  * only where the content is code.
  */
 :root {
+  color-scheme: light;
   --paper:   #f2f5f3;
   --paper2:  #e6ece8;
   --card:    #fafcfb;
@@ -31,26 +32,26 @@
   --bg: var(--paper);
   --bg2: var(--paper2);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper:   #0e1513;
-    --paper2:  #131c19;
-    --card:    #121a17;
-    --line:    #25332e;
-    --ink:     #e6efeb;
-    --ink2:    #b5c6bf;
-    --muted:   #8ba099;
-    --mark:    #ff7a52;
-    --mark-d:  #ff9a7a;
-    --accent:  #5fd0c5;
-    --accent-d:#8be3da;
-    --blue:    #5fd0c5;
-    --hi:      rgba(95, 208, 197, .22);
-    --term-bg: #070c0b;
-    --term-fg: #d6e5df;
-    --term-dim:#6f8780;
-    --shadow:  #060a09;
-  }
+/* Light is the default whatever the system prefers; dark is a choice made with the button in the menu. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:   #0e1513;
+  --paper2:  #131c19;
+  --card:    #121a17;
+  --line:    #25332e;
+  --ink:     #e6efeb;
+  --ink2:    #b5c6bf;
+  --muted:   #8ba099;
+  --mark:    #ff7a52;
+  --mark-d:  #ff9a7a;
+  --accent:  #5fd0c5;
+  --accent-d:#8be3da;
+  --blue:    #5fd0c5;
+  --hi:      rgba(95, 208, 197, .22);
+  --term-bg: #070c0b;
+  --term-fg: #d6e5df;
+  --term-dim:#6f8780;
+  --shadow:  #060a09;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -163,7 +164,7 @@ h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: cla
 .f-err::before { content: "● "; }
 .f-warn { color: #8a5a00; }
 .f-warn::before { content: "○ "; }
-@media (prefers-color-scheme: dark) { .f-warn { color: #f0c25a; } }
+html[data-theme="dark"] .f-warn { color: #f0c25a; }
 .finding h3 { font-family: 'Newsreader', Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--ink); }
 .finding p { font-size: .98rem; color: var(--ink2); line-height: 1.6; }
 
@@ -246,3 +247,13 @@ html { scroll-padding-top: 72px; }
 .brew-alt { margin-top: 10px; }
 .brew-alt .pr { font-size: .8rem; }
 .brew-cmd { max-width: 100%; overflow-x: auto; }
+
+/* the theme button */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0;
+  background: transparent; color: var(--ink2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer;
+  font-size: 1rem; line-height: 1;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+.theme-toggle::before { content: "\263E"; }                       /* a moon: switch to dark */
+html[data-theme="dark"] .theme-toggle::before { content: "\2600"; } /* a sun: switch to light */
