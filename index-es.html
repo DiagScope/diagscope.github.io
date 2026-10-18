@@ -51,7 +51,7 @@
       <div class="term-body">
         <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.5 · payment-service</span>
+        <span class="tl tl-brand">  DiagScope 0.1.6 · payment-service</span>
         <span class="tl tl-dim">  12 archivos · 61 métodos · 8 flujos · 340 ms</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">  ✗ SILENT_CATCH                   PaymentService.java:47</span>
@@ -184,6 +184,48 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="use maven" id="maven">
+  <div class="wrap">
+    <span class="sec-label">En tu build de Maven</span>
+    <h2>Rompe el build, no la producción</h2>
+    <p class="ai-intro">Un plugin de Maven ejecuta DiagScope durante <code>mvn verify</code> y rompe el build según la tolerancia que elijas. Está en Maven Central: no hay que añadir ningún repositorio ni instalar nada más.</p>
+    <div class="use-grid">
+      <div class="use-item">
+        <h3>Añádelo al POM</h3>
+        <p>Una entrada de plugin. Sin gate configurado solo informa, así que puedes adoptarlo primero y endurecerlo después.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:2px;font-size:.74rem;">
+          <span class="g" style="white-space:pre">&lt;plugin&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;groupId&gt;io.github.diagscope&lt;/groupId&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;artifactId&gt;diagscope-maven-plugin&lt;/artifactId&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;version&gt;0.1.6&lt;/version&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;executions&gt;&lt;execution&gt;</span>
+          <span class="g" style="white-space:pre">    &lt;goals&gt;&lt;goal&gt;scan&lt;/goal&gt;&lt;/goals&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;/execution&gt;&lt;/executions&gt;</span>
+          <span class="g" style="white-space:pre">&lt;/plugin&gt;</span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Elige el rigor</h3>
+        <p>El mismo <code>diagscope.yml</code> que rige la línea de comandos rige el build. O decide por ejecución, o por rama con un perfil.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">mvn verify -Ddiagscope.failOn=ERROR \</span></span>
+          <span><span class="g">    -Ddiagscope.failOnConfidence=HIGH</span></span>
+          <span><span class="pr">$</span> <span class="g">mvn verify -Ddiagscope.gateProfile=release</span></span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Ejecútalo una vez</h3>
+        <p>Sin editar el POM: útil para probarlo en un proyecto, o como un paso propio del pipeline.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan \</span></span>
+          <span><span class="g">    -Ddiagscope.failOn=ERROR</span></span>
+        </div>
+      </div>
+    </div>
+    <p class="ai-note">Maven se ejecuta en JDK 17 o superior. En un build multimódulo cada módulo se juzga por separado, los módulos <code>pom</code> se omiten, y un único <code>diagscope.yml</code> en la raíz rige todos. El analizador viene con el plugin: una descarga de unos 78 MB, en caché después.</p>
   </div>
 </section>
 

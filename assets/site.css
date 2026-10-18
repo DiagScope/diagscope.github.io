@@ -214,3 +214,7 @@ footer { border-top: 1px solid var(--line); padding: 34px 0; }
 .ai-intro { max-width: 62ch; font-size: 1.05rem; color: var(--ink2); margin-top: 14px; }
 .ai-note { max-width: 70ch; margin-top: 38px; padding-left: 16px; border-left: 3px solid var(--line); font-size: .92rem; color: var(--muted); }
 .ai-note code, .ai-intro code, .use-item code { font-size: .86em; }
+
+/* A long line of code scrolls inside its own block instead of widening the page on a phone. */
+.use-item { min-width: 0; }
+.use-item .cmd { max-width: 100%; overflow-x: auto; }
