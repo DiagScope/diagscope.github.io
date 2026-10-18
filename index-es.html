@@ -45,7 +45,7 @@ try { if (localStorage.getItem('diagscope-theme') === 'dark') document.documentE
       <p class="hero-sub">DiagScope lee el código fuente Java y Kotlin e informa de lo que destruye silenciosamente la evidencia de diagnóstico — excepciones tragadas, transacciones ausentes, llamadas HTTP sin timeout. Ejecútalo en tu build de Maven, deja que tu asistente de IA lo ejecute, o úsalo por separado. Nada sale de tu máquina.</p>
       <div class="hero-cmds">
         <span class="cmd-cap">En tu build de Maven</span>
-        <div class="cmd"><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan</span></div>
+        <div class="cmd"><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.7:scan</span></div>
         <span class="cmd-cap">Standalone, con Homebrew</span>
         <div class="cmd"><span class="pr">$</span> <span class="g">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span></div>
       </div>
@@ -59,8 +59,8 @@ try { if (localStorage.getItem('diagscope-theme') === 'dark') document.documentE
       <div class="term-body">
         <span class="tl tl-cmd">$ mvn verify</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-dim">[INFO] --- diagscope:0.1.6:scan (default) @ payment-service ---</span>
-        <span class="tl tl-brand">[INFO] DiagScope 0.1.6 analyzed 12 files in 340 ms.</span>
+        <span class="tl tl-dim">[INFO] --- diagscope:0.1.7:scan (default) @ payment-service ---</span>
+        <span class="tl tl-brand">[INFO] DiagScope 0.1.7 analyzed 12 files in 340 ms.</span>
         <span class="tl tl-dim">[INFO] Findings: 5 | Parse failures: 0 | Flow boundaries: 6</span>
         <span class="tl tl-gap"></span>
         <span class="tl tl-err">[ERROR] Gate failed:</span>
@@ -111,7 +111,7 @@ try { if (localStorage.getItem('diagscope-theme') === 'dark') document.documentE
           <span class="g" style="white-space:pre">&lt;plugin&gt;</span>
           <span class="g" style="white-space:pre">  &lt;groupId&gt;io.github.diagscope&lt;/groupId&gt;</span>
           <span class="g" style="white-space:pre">  &lt;artifactId&gt;diagscope-maven-plugin&lt;/artifactId&gt;</span>
-          <span class="g" style="white-space:pre">  &lt;version&gt;0.1.6&lt;/version&gt;</span>
+          <span class="g" style="white-space:pre">  &lt;version&gt;0.1.7&lt;/version&gt;</span>
           <span class="g" style="white-space:pre">  &lt;executions&gt;&lt;execution&gt;</span>
           <span class="g" style="white-space:pre">    &lt;goals&gt;&lt;goal&gt;scan&lt;/goal&gt;&lt;/goals&gt;</span>
           <span class="g" style="white-space:pre">  &lt;/execution&gt;&lt;/executions&gt;</span>
@@ -131,7 +131,7 @@ try { if (localStorage.getItem('diagscope-theme') === 'dark') document.documentE
         <h3>Ejecútalo una vez</h3>
         <p>Sin editar el POM: útil para probarlo en un proyecto, o como un paso propio del pipeline.</p>
         <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
-          <span><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan \</span></span>
+          <span><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.7:scan \</span></span>
           <span><span class="g">    -Ddiagscope.failOn=ERROR</span></span>
         </div>
       </div>
@@ -275,7 +275,7 @@ try { if (localStorage.getItem('diagscope-theme') === 'dark') document.documentE
       <p>Un comando, o una entrada en el POM.</p>
       <div class="brew-cmd">
         <span class="pr">$</span>
-        <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan</span>
+        <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.7:scan</span>
       </div>
       <div class="brew-cmd brew-alt">
         <span class="pr">o standalone:</span>
