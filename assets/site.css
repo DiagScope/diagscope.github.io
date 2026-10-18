@@ -1,9 +1,10 @@
 /*
  * DiagScope site.
  *
- * The idea is a reviewer's notebook on cool mineral paper: deep green-black ink, one vermilion marker for what
- * needs attention, teal for what can be clicked and a highlighter for what matters. No gradients, no glow, no rounded card grid. Serif headings, a humanist sans for
- * reading and a monospace only where the content is code.
+ * The same look as the HTML report's light theme: cool mineral paper, deep green-black ink, teal as the one accent
+ * (labels, links, command blocks, the menu), a yellow highlighter for what matters, and vermilion kept for errors
+ * only. No gradients, no glow, no rounded card grid. Serif headings, a humanist sans for reading and a monospace
+ * only where the content is code.
  */
 :root {
   --paper:   #f2f5f3;
@@ -15,6 +16,9 @@
   --muted:   #5b6c66;
   --mark:    #c43d17;
   --mark-d:  #9a2d0f;
+  /* the report's accent: teal for what is interactive or structural; the vermilion above is kept for errors only */
+  --accent:  #0b6460;
+  --accent-d:#084a47;
   --blue:    #0b6460;
   --hi:      rgba(255, 196, 61, .5);
   --term-bg: #0f1a18;
@@ -23,7 +27,7 @@
   --shadow:  #cfd9d3;
 
   /* aliases used by inline styles in the pages */
-  --brand: var(--mark);
+  --brand: var(--accent);
   --bg: var(--paper);
   --bg2: var(--paper2);
 }
@@ -38,8 +42,10 @@
     --muted:   #8ba099;
     --mark:    #ff7a52;
     --mark-d:  #ff9a7a;
+    --accent:  #5fd0c5;
+    --accent-d:#8be3da;
     --blue:    #5fd0c5;
-    --hi:      rgba(255, 122, 82, .25);
+    --hi:      rgba(95, 208, 197, .22);
     --term-bg: #070c0b;
     --term-fg: #d6e5df;
     --term-dim:#6f8780;
@@ -61,21 +67,21 @@ body {
 code, .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
 a { color: inherit; text-decoration: none; }
 p a, figcaption a { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
 /* nav */
 nav { position: sticky; top: 0; z-index: 50; background: var(--paper); border-bottom: 1px solid var(--line); }
 nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .logo { font-family: 'Newsreader', Georgia, serif; font-size: 1.35rem; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
-.logo::after { content: "."; color: var(--mark); }
+.logo::after { content: "."; color: var(--accent); }
 .nav-right { display: flex; align-items: center; gap: 20px; }
 .lang-sw { display: flex; gap: 2px; font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--muted); }
 .lang-sw a { color: var(--muted); padding: 3px 6px; border-bottom: 2px solid transparent; }
 .lang-sw a:hover { color: var(--ink); }
-.lang-sw a.on { color: var(--ink); border-bottom-color: var(--mark); }
+.lang-sw a.on { color: var(--ink); border-bottom-color: var(--accent); }
 .nav-gh { display: inline-flex; align-items: center; gap: 7px; color: var(--ink2); font-size: .92rem; }
-.nav-gh:hover { color: var(--mark); }
+.nav-gh:hover { color: var(--accent); }
 .nav-gh svg { width: 16px; height: 16px; fill: currentColor; }
 
 /* hero */
@@ -86,7 +92,7 @@ nav .wrap { display: flex; align-items: center; justify-content: space-between; 
   display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
   font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
-.badge::before { content: ""; width: 28px; height: 2px; background: var(--mark); }
+.badge::before { content: ""; width: 28px; height: 2px; background: var(--accent); }
 h1 {
   font-family: 'Newsreader', Georgia, serif; font-weight: 500;
   font-size: clamp(2.3rem, 5.4vw, 3.5rem); line-height: 1.08; letter-spacing: -.02em; color: var(--ink);
@@ -100,7 +106,7 @@ h1 em {
 .hero-cmds { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .cmd {
   display: inline-flex; align-items: center; gap: 10px;
-  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--mark); border-radius: 2px;
+  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 2px;
   padding: 9px 14px; font-family: 'IBM Plex Mono', monospace; font-size: .83rem; color: var(--ink);
 }
 .cmd .pr { color: var(--muted); }
@@ -136,7 +142,7 @@ h1 em {
 .what, .install, .use, .preview, .cta, .ways { padding: 76px 0; border-top: 1px solid var(--line); }
 .sec-label {
   display: block; margin-bottom: 14px;
-  font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mark);
+  font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
 }
 h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.15; letter-spacing: -.015em; color: var(--ink); }
 .what-sub, .preview p.sub { margin-top: 14px; font-size: 1.05rem; color: var(--ink2); max-width: 58ch; line-height: 1.7; }
@@ -165,7 +171,7 @@ h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: cla
 .steps { display: grid; grid-template-columns: 1fr; gap: 36px; margin-top: 38px; }
 @media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); gap: 40px; } }
 .step { display: flex; flex-direction: column; gap: 10px; }
-.step-n { font-family: 'IBM Plex Mono', monospace; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--mark); }
+.step-n { font-family: 'IBM Plex Mono', monospace; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
 .step h3 { font-family: 'Newsreader', Georgia, serif; font-size: 1.25rem; font-weight: 600; color: var(--ink); }
 .step p { font-size: .98rem; color: var(--ink2); }
 .step .cmd { margin-top: 4px; }
@@ -189,7 +195,7 @@ h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: cla
 .cta-inner p { color: var(--ink2); margin: 12px auto 0; font-size: 1.05rem; max-width: 40ch; }
 .brew-cmd {
   display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; padding: 11px 18px;
-  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--mark); border-radius: 2px;
+  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 2px;
   font-family: 'IBM Plex Mono', monospace; font-size: .83rem; color: var(--ink); text-align: left; overflow-x: auto; max-width: 100%;
 }
 .brew-cmd .pr { color: var(--muted); }
@@ -197,7 +203,7 @@ h2 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: cla
 .cta-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 26px; }
 .btn { display: inline-flex; align-items: center; gap: 7px; padding: 11px 22px; border-radius: 2px; font-size: .95rem; font-weight: 600; border: 2px solid var(--ink); transition: background .15s, color .15s; }
 .btn-white { background: var(--ink); color: var(--paper); }
-.btn-white:hover { background: var(--mark); border-color: var(--mark); color: #fff; }
+.btn-white:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-ghost:hover { background: var(--ink); color: var(--paper); }
 
@@ -209,7 +215,7 @@ footer { border-top: 1px solid var(--line); padding: 34px 0; }
 .foot-brand strong { font-family: 'Newsreader', Georgia, serif; font-weight: 600; color: var(--ink); }
 .foot-links { display: flex; gap: 22px; font-size: .95rem; }
 .foot-links a { color: var(--ink2); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.foot-links a:hover { color: var(--mark); }
+.foot-links a:hover { color: var(--accent); }
 
 .ai-intro { max-width: 62ch; font-size: 1.05rem; color: var(--ink2); margin-top: 14px; }
 .ai-note { max-width: 70ch; margin-top: 38px; padding-left: 16px; border-left: 3px solid var(--line); font-size: .92rem; color: var(--muted); }
@@ -222,7 +228,7 @@ footer { border-top: 1px solid var(--line); padding: 34px 0; }
 /* section anchors in the menu; on a phone the sections are one scroll away, so the menu keeps only the logo and language */
 .nav-links { display: flex; gap: 22px; font-size: .92rem; }
 .nav-links a { color: var(--ink2); }
-.nav-links a:hover { color: var(--mark); }
+.nav-links a:hover { color: var(--accent); }
 @media (max-width: 760px) { .nav-links { display: none; } }
 html { scroll-padding-top: 72px; }
 
@@ -234,7 +240,7 @@ html { scroll-padding-top: 72px; }
 /* the three ways in */
 .ways .steps { margin-top: 34px; }
 .step .more { margin-top: auto; padding-top: 6px; font-weight: 600; font-size: .95rem; color: var(--blue); border-bottom: 2px solid transparent; align-self: flex-start; }
-.step .more:hover { color: var(--mark); border-bottom-color: var(--mark); }
+.step .more:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* the closing call: the Maven line first, standalone second */
 .brew-alt { margin-top: 10px; }
