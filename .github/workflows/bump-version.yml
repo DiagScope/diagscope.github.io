@@ -1,0 +1,32 @@
+name: bump-version
+
+# Fired by the release workflow of DiagScope/diagscope: the site shows the newest version in the terminal sample and in
+# the Maven plugin examples, and this keeps them current without anyone editing three pages.
+on:
+  repository_dispatch:
+    types: [new-release]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update the version in the pages
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          perl -pi -e 's#(DiagScope )\d+\.\d+\.\d+( ·)#$1$ENV{VERSION}$2#g; s#(&lt;version&gt;)\d[^&]*(&lt;/version&gt;)#$1$ENV{VERSION}$2#g; s#(diagscope-maven-plugin:)\d[^:\s\\]*(:scan)#$1$ENV{VERSION}$2#g' index.html index-es.html index-pt.html
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "Already at $VERSION."; exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -qam "site: show $VERSION"
+          git push
