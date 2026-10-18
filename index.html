@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DiagScope — Static analysis for Java &amp; Kotlin</title>
-<meta name="description" content="DiagScope finds code that silently destroys diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts, and more.">
+<meta name="description" content="DiagScope finds code that silently destroys diagnostic evidence in Java and Kotlin: swallowed exceptions, missing transactions, HTTP calls without timeouts. Run it in your Maven build, with your AI assistant, or on its own.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,6 +20,8 @@
             DiagScope
     </a>
     <div class="nav-right">
+      <div class="nav-links"><a href="#maven">Maven</a><a href="#ai">AI assistants</a><a href="#standalone">Standalone</a></div>
+      
       <a href="https://github.com/DiagScope/homebrew-tap" class="nav-gh" target="_blank" rel="noopener">
         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
@@ -36,152 +38,57 @@
     <div>
       <span class="badge">Static analysis · Java &amp; Kotlin</span>
       <h1>Find the code that <em>hides failures</em> before production does</h1>
-      <p class="hero-sub">DiagScope scans Java and Kotlin projects for patterns that silently destroy diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts. Runs locally, no data leaves your machine.</p>
+      <p class="hero-sub">DiagScope reads your Java and Kotlin source and reports code that silently destroys diagnostic evidence — swallowed exceptions, missing transactions, HTTP calls without timeouts. Run it in your Maven build, let your AI assistant run it, or use it on its own. Nothing leaves your machine.</p>
       <div class="hero-cmds">
+        <span class="cmd-cap">In your Maven build</span>
+        <div class="cmd"><span class="pr">$</span> <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan</span></div>
+        <span class="cmd-cap">Standalone, with Homebrew</span>
         <div class="cmd"><span class="pr">$</span> <span class="g">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span></div>
-        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
       </div>
-      <p class="hero-note">No build required &nbsp;·&nbsp; Java &amp; Kotlin &nbsp;·&nbsp; Spring / Quarkus / Micronaut</p>
+      <p class="hero-note">Maven plugin &nbsp;·&nbsp; AI assistants &nbsp;·&nbsp; Standalone CLI &nbsp;·&nbsp; Java &amp; Kotlin &nbsp;·&nbsp; Spring / Quarkus / Micronaut</p>
     </div>
 
-    <div class="term" aria-label="Example terminal output">
+    <div class="term" aria-label="Example Maven build output">
       <div class="term-bar">
         <span class="term-label">terminal</span>
       </div>
       <div class="term-body">
-        <span class="tl tl-cmd">$ diagscope scan --project ./payment-service</span>
+        <span class="tl tl-cmd">$ mvn verify</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-brand">  DiagScope 0.1.6 · payment-service</span>
-        <span class="tl tl-dim">  12 files · 61 methods · 8 flows · 340 ms</span>
+        <span class="tl tl-dim">[INFO] --- diagscope:0.1.6:scan (default) @ payment-service ---</span>
+        <span class="tl tl-brand">[INFO] DiagScope 0.1.6 analyzed 12 files in 340 ms.</span>
+        <span class="tl tl-dim">[INFO] Findings: 5 | Parse failures: 0 | Flow boundaries: 6</span>
         <span class="tl tl-gap"></span>
-        <span class="tl tl-err">  ✗ SILENT_CATCH                   PaymentService.java:47</span>
-        <span class="tl tl-warn">  ⚠ FUTURE_GET_WITHOUT_TIMEOUT     ReportService.java:83</span>
-        <span class="tl tl-warn">  ⚠ MISSING_TRANSACTION_ANNOTATION OrderService.java:31</span>
-        <span class="tl tl-warn">  ⚠ HTTP_TIMEOUT_NOT_SET           AlertService.java:22</span>
-        <span class="tl tl-warn">  ⚠ N_PLUS_ONE_QUERY_RISK          OrderService.java:61</span>
-        <span class="tl tl-gap"></span>
-        <span class="tl tl-fin">  5 findings · report.html generated</span>
+        <span class="tl tl-err">[ERROR] Gate failed:</span>
+        <span class="tl tl-err">[ERROR]   - 1 finding(s): severity &gt;= ERROR, confidence &gt;= HIGH</span>
+        <span class="tl tl-fin">[INFO] BUILD FAILURE</span>
       </div>
     </div>
   </div>
 </header>
 
-<section class="what">
+<section class="ways" id="ways">
   <div class="wrap">
-    <span class="sec-label">What it finds</span>
-    <h2>Code that fails silently</h2>
-    <p class="what-sub">Exceptions, transactions, concurrency, Kafka, performance, security, and more. Every finding names the entrypoint that reaches the problem.</p>
-    <div class="findings">
-      <div class="finding">
-        <span class="finding-id f-err">SILENT_CATCH</span>
-        <h3>Swallowed exception</h3>
-        <p>Caught and never logged or re-thrown — the failure simply disappears.</p>
-      </div>
-      <div class="finding">
-        <span class="finding-id f-warn">FUTURE_GET_WITHOUT_TIMEOUT</span>
-        <h3>Blocking call without timeout</h3>
-        <p>A thread hangs indefinitely waiting for a result that may never come.</p>
-      </div>
-      <div class="finding">
-        <span class="finding-id f-warn">MISSING_TRANSACTION_ANNOTATION</span>
-        <h3>Write without transaction</h3>
-        <p>If a later step fails, the first write is committed and cannot be rolled back.</p>
-      </div>
-      <div class="finding">
-        <span class="finding-id f-warn">HTTP_TIMEOUT_NOT_SET</span>
-        <h3>HTTP call with no timeout</h3>
-        <p>A slow upstream exhausts the thread pool and takes the whole service down.</p>
-      </div>
-      <div class="finding">
-        <span class="finding-id f-warn">N_PLUS_ONE_QUERY_RISK</span>
-        <h3>N+1 query in loop</h3>
-        <p>A database call inside a loop — scales linearly and degrades with data growth.</p>
-      </div>
-      <div class="finding">
-        <span class="finding-id f-warn">KAFKA_SEND_RESULT_IGNORED</span>
-        <h3>Kafka send not observed</h3>
-        <p>The publish result is dropped — failures are invisible to the caller.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="install">
-  <div class="wrap">
-    <span class="sec-label">Install</span>
-    <h2>Up and running in two commands</h2>
+    <span class="sec-label">Three ways in</span>
+    <h2>Pick where it fits your workflow</h2>
     <div class="steps">
       <div class="step">
-        <span class="step-n">01 — Add the tap</span>
-        <h3>Install via Homebrew</h3>
-        <p>Java is bundled automatically — nothing else to configure.</p>
-        <div class="cmd"><span class="pr">$</span> <span class="g">brew tap DiagScope/tap</span></div>
-        <div class="cmd" style="margin-top:6px;"><span class="pr">$</span> <span class="g">brew install diagscope</span></div>
+        <span class="step-n">01 — In your build</span>
+        <h3>Maven plugin</h3>
+        <p><code>mvn verify</code> fails by the tolerance you set. One POM entry, nothing else to install.</p>
+        <a class="more" href="#maven">Set it up →</a>
       </div>
       <div class="step">
-        <span class="step-n">02 — Scan</span>
-        <h3>Point at a project</h3>
-        <p>No build step required. Works with Maven and Gradle layouts.</p>
-        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
+        <span class="step-n">02 — With your AI assistant</span>
+        <h3>Check generated code</h3>
+        <p>Instructions and a hook make the assistant run DiagScope before it says it is done.</p>
+        <a class="more" href="#ai">See how →</a>
       </div>
       <div class="step">
-        <span class="step-n">03 — Read the report</span>
-        <h3>Results in seconds</h3>
-        <p>HTML, Markdown, and JSON outputs in <code>target/diagscope/</code> or <code>build/diagscope/</code>.</p>
-        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.76rem;">
-          <span><span style="color:var(--brand)">report.html</span> &nbsp;← interactive</span>
-          <span><span style="color:var(--muted)">report.md</span> &nbsp;&nbsp;← for PR review</span>
-          <span><span style="color:var(--muted)">result.json</span> &nbsp;← automation</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="preview" id="report">
-  <div class="wrap">
-    <span class="sec-label">Report</span>
-    <h2>What the report looks like</h2>
-    <p class="sub">Open <code>report.html</code> in any browser. It is one self-contained file: no server, no network. It ranks what to fix first, filters by severity and confidence, and shows the call path from the entrypoint to each finding.</p>
-    <figure>
-      <a class="shot" href="example-report.html" aria-label="Open the live example report">
-        <img src="assets/report-preview.png" width="1360" height="2600" loading="lazy" alt="DiagScope HTML report: executive summary by rule, severity and confidence, a ranked "Fix these first" list, and findings with file, line and the flow that reaches them">
-      </a>
-      <figcaption>Real report generated from a small sample project. <a href="example-report.html">Open the live example report →</a></figcaption>
-    </figure>
-  </div>
-</section>
-
-<section class="use">
-  <div class="wrap">
-    <span class="sec-label">Usage</span>
-    <h2>Common commands</h2>
-    <div class="use-grid">
-      <div class="use-item">
-        <h3>Scan a Spring project</h3>
-        <p>REST endpoints, Kafka listeners, and scheduled jobs are detected as entrypoints automatically.</p>
-        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
-      </div>
-      <div class="use-item">
-        <h3>CI gate — only new findings</h3>
-        <p>Fail the build only on findings introduced in this PR, leaving existing issues for later.</p>
-        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
-          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --update-baseline</span></span>
-          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --baseline --fail-on ERROR</span></span>
-        </div>
-      </div>
-      <div class="use-item">
-        <h3>Explain a finding</h3>
-        <p>Get the full description, why it matters, and how to fix it.</p>
-        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope explain SILENT_CATCH</span></div>
-      </div>
-      <div class="use-item">
-        <h3>Browse the rules</h3>
-        <p>The catalog grows with every release, so ask the tool: it lists every rule with its severity, category and version.</p>
-        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
-          <span><span class="pr">$</span> <span class="g">diagscope rules</span></span>
-          <span><span class="pr">$</span> <span class="g">diagscope rules --format JSON</span></span>
-        </div>
+        <span class="step-n">03 — Standalone</span>
+        <h3>No dependency in your project</h3>
+        <p>A CLI for any build and any CI, from Homebrew or a JAR. For when a build plugin is not welcome.</p>
+        <a class="more" href="#standalone">Install it →</a>
       </div>
     </div>
   </div>
@@ -264,17 +171,115 @@
   </div>
 </section>
 
+<section class="use standalone" id="standalone">
+  <div class="wrap">
+    <span class="sec-label">Standalone</span>
+    <h2>No dependency in your project</h2>
+    <p class="ai-intro">The same analyzer runs on its own. Use it when your company does not want a build plugin, when the build is Gradle, or to look at a repository you do not own. Nothing is added to the project.</p>
+    <div class="use-grid">
+      <div class="use-item">
+        <h3>Install</h3>
+        <p>Homebrew brings Java 17 with it. Without Homebrew, download the JAR and run it on Java 17 or newer.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">brew tap DiagScope/tap</span></span>
+          <span><span class="pr">$</span> <span class="g">brew install diagscope</span></span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Scan a project</h3>
+        <p>No build step. REST endpoints, Kafka listeners and scheduled jobs are found as entrypoints; reports land in <code>target/diagscope</code> or <code>build/diagscope</code>.</p>
+        <div class="cmd"><span class="pr">$</span> <span class="g">diagscope scan --project .</span></div>
+      </div>
+      <div class="use-item">
+        <h3>CI gate — only new findings</h3>
+        <p>Fail the build only on findings introduced in this pull request, and leave the existing ones for later.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --update-baseline</span></span>
+          <span><span class="pr">$</span> <span class="g">diagscope scan --project . --baseline --fail-on ERROR</span></span>
+        </div>
+      </div>
+      <div class="use-item">
+        <h3>Explain a finding, browse the rules</h3>
+        <p>The full description, why it matters and how to fix it; the catalog lists every rule with its severity, category and version.</p>
+        <div class="cmd" style="flex-direction:column;align-items:flex-start;gap:4px;font-size:.78rem;">
+          <span><span class="pr">$</span> <span class="g">diagscope explain SILENT_CATCH</span></span>
+          <span><span class="pr">$</span> <span class="g">diagscope rules</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="what">
+  <div class="wrap">
+    <span class="sec-label">What it finds</span>
+    <h2>Code that fails silently</h2>
+    <p class="what-sub">Exceptions, transactions, concurrency, Kafka, performance, security, and more. Every finding names the entrypoint that reaches the problem.</p>
+    <div class="findings">
+      <div class="finding">
+        <span class="finding-id f-err">SILENT_CATCH</span>
+        <h3>Swallowed exception</h3>
+        <p>Caught and never logged or re-thrown — the failure simply disappears.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">FUTURE_GET_WITHOUT_TIMEOUT</span>
+        <h3>Blocking call without timeout</h3>
+        <p>A thread hangs indefinitely waiting for a result that may never come.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">MISSING_TRANSACTION_ANNOTATION</span>
+        <h3>Write without transaction</h3>
+        <p>If a later step fails, the first write is committed and cannot be rolled back.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">HTTP_TIMEOUT_NOT_SET</span>
+        <h3>HTTP call with no timeout</h3>
+        <p>A slow upstream exhausts the thread pool and takes the whole service down.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">N_PLUS_ONE_QUERY_RISK</span>
+        <h3>N+1 query in loop</h3>
+        <p>A database call inside a loop — scales linearly and degrades with data growth.</p>
+      </div>
+      <div class="finding">
+        <span class="finding-id f-warn">KAFKA_SEND_RESULT_IGNORED</span>
+        <h3>Kafka send not observed</h3>
+        <p>The publish result is dropped — failures are invisible to the caller.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="preview" id="report">
+  <div class="wrap">
+    <span class="sec-label">Report</span>
+    <h2>What the report looks like</h2>
+    <p class="sub">Open <code>report.html</code> in any browser. It is one self-contained file: no server, no network. It ranks what to fix first, filters by severity and confidence, and shows the call path from the entrypoint to each finding.</p>
+    <figure>
+      <a class="shot" href="example-report.html" aria-label="Open the live example report">
+        <img src="assets/report-preview.png" width="1360" height="2600" loading="lazy" alt="DiagScope HTML report: executive summary by rule, severity and confidence, a ranked "Fix these first" list, and findings with file, line and the flow that reaches them">
+      </a>
+      <figcaption>Real report generated from a small sample project. <a href="example-report.html">Open the live example report →</a></figcaption>
+    </figure>
+  </div>
+</section>
+
 <section class="cta">
   <div class="wrap">
     <div class="cta-inner">
       <h2>Try it on your own code.</h2>
-      <p>Two commands and you're running.</p>
+      <p>One command, or one entry in the POM.</p>
       <div class="brew-cmd">
         <span class="pr">$</span>
+        <span class="g">mvn io.github.diagscope:diagscope-maven-plugin:0.1.6:scan</span>
+      </div>
+      <div class="brew-cmd brew-alt">
+        <span class="pr">or standalone:</span>
         <span class="g">brew tap DiagScope/tap &amp;&amp; brew install diagscope</span>
       </div>
       <div class="cta-btns">
-        <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-white" target="_blank" rel="noopener">Homebrew tap →</a>
+        <a href="https://github.com/DiagScope/diagscope/blob/main/docs/MAVEN_PLUGIN.md" class="btn btn-white" target="_blank" rel="noopener">Maven plugin docs →</a>
+        <a href="https://github.com/DiagScope/homebrew-tap" class="btn btn-ghost" target="_blank" rel="noopener">Homebrew tap</a>
         <a href="example-report.html" class="btn btn-ghost">Example report</a>
       </div>
     </div>
@@ -286,6 +291,7 @@
     <span class="foot-brand"><strong>DiagScope</strong> — static diagnostic coverage for Java &amp; Kotlin.</span>
     <div class="foot-links">
       <a href="https://github.com/DiagScope/homebrew-tap" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://repo1.maven.org/maven2/io/github/diagscope/" target="_blank" rel="noopener">Maven Central</a>
       <a href="example-report.html">Example report</a>
     </div>
   </div>

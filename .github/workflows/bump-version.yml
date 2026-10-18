@@ -19,7 +19,7 @@ jobs:
         env:
           VERSION: ${{ github.event.client_payload.version }}
         run: |
-          perl -pi -e 's#(DiagScope )\d+\.\d+\.\d+( ·)#$1$ENV{VERSION}$2#g; s#(&lt;version&gt;)\d[^&]*(&lt;/version&gt;)#$1$ENV{VERSION}$2#g; s#(diagscope-maven-plugin:)\d[^:\s\\]*(:scan)#$1$ENV{VERSION}$2#g' index.html index-es.html index-pt.html
+          perl -pi -e 's#(DiagScope )\d+\.\d+\.\d+(?= (?:·|analyzed))#$1$ENV{VERSION}#g; s#(--- diagscope:)\d+\.\d+\.\d+(:scan)#$1$ENV{VERSION}$2#g; s#(&lt;version&gt;)\d[^&]*(&lt;/version&gt;)#$1$ENV{VERSION}$2#g; s#(diagscope-maven-plugin:)\d[^:\s\\]*(:scan)#$1$ENV{VERSION}$2#g' index.html index-es.html index-pt.html
 
       - name: Commit and push
         env:

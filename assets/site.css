@@ -133,7 +133,7 @@ h1 em {
 @media (prefers-reduced-motion: reduce) { .tl { opacity: 1; animation: none; } html { scroll-behavior: auto; } }
 
 /* sections */
-.what, .install, .use, .preview, .cta { padding: 76px 0; border-top: 1px solid var(--line); }
+.what, .install, .use, .preview, .cta, .ways { padding: 76px 0; border-top: 1px solid var(--line); }
 .sec-label {
   display: block; margin-bottom: 14px;
   font-family: 'IBM Plex Mono', monospace; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mark);
@@ -218,3 +218,25 @@ footer { border-top: 1px solid var(--line); padding: 34px 0; }
 /* A long line of code scrolls inside its own block instead of widening the page on a phone. */
 .use-item { min-width: 0; }
 .use-item .cmd { max-width: 100%; overflow-x: auto; }
+
+/* section anchors in the menu; on a phone the sections are one scroll away, so the menu keeps only the logo and language */
+.nav-links { display: flex; gap: 22px; font-size: .92rem; }
+.nav-links a { color: var(--ink2); }
+.nav-links a:hover { color: var(--mark); }
+@media (max-width: 760px) { .nav-links { display: none; } }
+html { scroll-padding-top: 72px; }
+
+/* the hero names its two commands */
+.cmd-cap { font-family: 'IBM Plex Mono', monospace; font-size: .68rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.cmd-cap:first-child { margin-top: 0; }
+.hero-cmds .cmd { max-width: 100%; overflow-x: auto; font-size: .78rem; }
+
+/* the three ways in */
+.ways .steps { margin-top: 34px; }
+.step .more { margin-top: auto; padding-top: 6px; font-weight: 600; font-size: .95rem; color: var(--blue); border-bottom: 2px solid transparent; align-self: flex-start; }
+.step .more:hover { color: var(--mark); border-bottom-color: var(--mark); }
+
+/* the closing call: the Maven line first, standalone second */
+.brew-alt { margin-top: 10px; }
+.brew-alt .pr { font-size: .8rem; }
+.brew-cmd { max-width: 100%; overflow-x: auto; }
